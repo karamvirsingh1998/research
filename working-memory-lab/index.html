@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Working Memory Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: lab notebook — one narrow column of four numbered experiments, each a live instrument with a readout beside it */
+:root{
+  --bg:#F2F3F6; --panel:#FFFFFF; --ink:#181C2A; --ink-2:#565C70; --ink-3:#8A90A3;
+  --line:#DCDFE7; --accent:#4A4FD3; --accent-soft:#E6E7FB; --signal:#C9761A; --signal-soft:#F8ECDD;
+  --good:#2E7D5B; --bad:#B4413A;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12141C; --panel:#1B1E29; --ink:#E9EBF2; --ink-2:#A6ABBD; --ink-3:#71778B;
+  --line:#2C3040; --accent:#8F93FF; --accent-soft:#272A4A; --signal:#E9A24E; --signal-soft:#3A2C1C;
+  --good:#5FC495; --bad:#EE7C73; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12141C; --panel:#1B1E29; --ink:#E9EBF2; --ink-2:#A6ABBD; --ink-3:#71778B;
+  --line:#2C3040; --accent:#8F93FF; --accent-soft:#272A4A; --signal:#E9A24E; --signal-soft:#3A2C1C;
+  --good:#5FC495; --bad:#EE7C73; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+main{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:48px}
+h1,h2{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0;letter-spacing:-0.01em}
+h1{font-size:clamp(2rem,5vw,3.1rem);line-height:1.05}
+h2{font-size:1.55rem;line-height:1.2}
+p{margin:0;max-width:65ch}
+.lede{color:var(--ink-2);font-size:1.08rem}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--ink-2)}
+.small{font-size:13.5px}
+header{display:flex;flex-direction:column;gap:14px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font:13px var(--mono);color:var(--ink-2)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+section{display:flex;flex-direction:column;gap:16px}
+.exp-head{display:flex;flex-direction:column;gap:8px}
+.bench{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:22px}
+@media (max-width:720px){.bench{grid-template-columns:minmax(0,1fr)}}
+.readout{display:flex;flex-direction:column;gap:14px;border-left:1px solid var(--line);padding-left:22px;min-width:0}
+@media (max-width:720px){.readout{border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:18px}}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat b{font:500 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.stat output{font:600 2rem/1.1 var(--display);font-variant-numeric:tabular-nums}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:500 14px var(--body);padding:9px 16px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--ink-3)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+button:focus-visible,input:focus-visible,label.tog:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+input[type=text]{font:500 1.25rem var(--mono);letter-spacing:.2em;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:min(100%,260px)}
+input[type=range]{accent-color:var(--accent);width:100%}
+label.tog{display:inline-flex;align-items:center;gap:7px;font-size:14px;padding:7px 11px;border:1px solid var(--line);border-radius:999px;cursor:pointer;user-select:none}
+label.tog input{accent-color:var(--accent);margin:0}
+label.tog.dis:has(input:checked){background:var(--signal-soft);border-color:var(--signal)}
+label.tog.boost:has(input:checked){background:var(--accent-soft);border-color:var(--accent)}
+.stage{min-height:150px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:18px;text-align:center}
+.digit{font:600 clamp(3rem,10vw,4.6rem)/1 var(--display);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.err{color:var(--bad);font-size:13px;min-height:1.2em}
+.hist{display:flex;gap:4px;align-items:flex-end;height:46px}
+.hist i{flex:1;max-width:22px;background:var(--accent);border-radius:3px 3px 0 0;opacity:.85}
+.hist i.x{background:var(--bad)}
+.chart-wrap{overflow-x:auto}
+svg text{font-family:var(--mono);font-size:11px;fill:var(--ink-3)}
+.trigram{font:600 2.6rem var(--mono);letter-spacing:.2em;transition:opacity .15s,filter .15s}
+canvas{display:block;max-width:100%;margin:0 auto}
+.note{font-size:13px;color:var(--ink-3);border-top:1px dashed var(--line);padding-top:10px}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr) 52px;gap:12px;align-items:center;font-size:14px}
+@media (max-width:520px){.bar{grid-template-columns:minmax(0,1fr) 52px}.bar .track{grid-column:1/-1;grid-row:2}}
+.track{height:12px;background:var(--bg);border-radius:6px;position:relative;overflow:hidden}
+.track span{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:6px}
+.track span.weak{background:var(--ink-3)}
+.bar output{font:500 13px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+footer{font-size:13px;color:var(--ink-3);display:flex;flex-direction:column;gap:6px}
+footer a{color:var(--accent)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.navlink{color:var(--accent);font-weight:500;text-decoration:none;border:1px solid var(--line);padding:7px 12px;border-radius:999px}
+.navlink:hover{border-color:var(--accent)}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.steps li{font:500 12px var(--mono);padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--ink-3)}
+.steps li.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.steps li.done{color:var(--ink-2)}
+.steps li.done::before{content:"✓ ";color:var(--good)}
+.ck{display:flex;flex-direction:column;gap:16px}
+.ck h3{font:600 1.2rem var(--display);margin:0}
+.q{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.q fieldset{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:6px}
+.q legend{padding:0;margin-bottom:8px;font-size:15px}
+.opt{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opt input{accent-color:var(--accent);margin:0}
+.words{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.words span{font:500 1.15rem var(--mono);padding:12px;text-align:center;border-radius:8px;background:var(--bg)}
+textarea{font:15px var(--body);width:100%;min-height:96px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.corsi{position:relative;width:min(100%,340px);aspect-ratio:1;background:var(--bg);border-radius:12px;margin:0 auto}
+.corsi button{position:absolute;width:15%;aspect-ratio:1;padding:0;border-radius:6px;background:var(--panel);border:1px solid var(--ink-3);transition:background .12s}
+.corsi button.lit{background:var(--signal);border-color:var(--signal)}
+.corsi button.hit{background:var(--accent);border-color:var(--accent)}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card b{font:500 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.card .big{font:600 1.8rem/1.1 var(--display);font-variant-numeric:tabular-nums}
+.pill{align-self:flex-start;font:500 12px var(--mono);padding:3px 9px;border-radius:999px}
+.pill.ok{background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--good)}
+.pill.mid{background:var(--signal-soft);color:var(--signal)}
+.pill.low{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
+.pbar{height:8px;border-radius:4px;background:var(--bg);position:relative}
+.pbar i{position:absolute;top:-3px;width:3px;height:14px;border-radius:2px;background:var(--ink)}
+.pbar::before{content:"";position:absolute;inset:0 auto 0 0;width:16%;background:color-mix(in srgb,var(--bad) 22%,transparent);border-radius:4px 0 0 4px}
+.verdict{border-radius:12px;padding:16px;background:var(--accent-soft)}
+.verdict.warn{background:var(--signal-soft)}
+.flags{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<main>
+<header>
+  <span class="eyebrow">Interactive lab · self-check + 4 experiments</span>
+  <h1>Why short-term memory slips, and what actually helps</h1>
+  <p class="lede">Short-term (working) memory holds about four chunks for a few seconds while prefrontal neurons keep firing. Each experiment below lets you test or simulate one way it fails.</p>
+  <div class="legend"><span style="--c:var(--signal)">Disruptor</span><span style="--c:var(--accent)">Booster</span></div>
+  <nav class="controls small"><a href="#check" class="navlink">Take the memory self-check</a><a href="#e1" class="navlink">Jump to the experiments</a></nav>
+</header>
+
+<!-- SELF-CHECK -->
+<section id="check" aria-labelledby="ck">
+  <div class="exp-head">
+    <span class="eyebrow">Self-check · about 10 minutes</span>
+    <h2 id="ck">Memory self-check with a scored report</h2>
+    <p class="muted">Five short tasks used in clinical memory testing, plus a questionnaire about everyday lapses. Your scores are compared with healthy adults of your age. Do it in a quiet place, without writing anything down.</p>
+  </div>
+  <div class="bench" style="grid-template-columns:minmax(0,1fr)">
+    <ol class="steps" id="ckSteps" aria-label="Progress"></ol>
+    <div id="ckBody" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- EXP 1 -->
+<section aria-labelledby="e1">
+  <div class="exp-head">
+    <span class="eyebrow">Experiment 1 · Capacity</span>
+    <h2 id="e1">Test your digit span</h2>
+    <p class="muted">Digits flash one at a time. Type them back in order. Each correct answer adds a digit. Most adults top out around 7 single digits, which is roughly 4 chunks.</p>
+  </div>
+  <div class="bench">
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div class="stage" id="spanStage" aria-live="polite">
+        <div class="digit" id="spanDigit">4 7 2 9</div>
+        <p class="muted small" id="spanMsg">Sample sequence. Press Start to begin at 4 digits.</p>
+      </div>
+      <form id="spanForm" class="controls" hidden>
+        <label for="spanInput" class="small muted">Your answer</label>
+        <input type="text" id="spanInput" inputmode="numeric" autocomplete="off" aria-describedby="spanErr">
+        <button class="primary" type="submit">Check</button>
+        <div class="err" id="spanErr" style="flex-basis:100%"></div>
+      </form>
+      <div class="controls">
+        <button class="primary" id="spanStart" type="button">Start test</button>
+        <label class="tog boost"><input type="checkbox" id="spanChunk"> Show in chunks of 3</label>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="stat"><b>Current length</b><output id="spanLen">4</output></div>
+      <div class="stat"><b>Best span</b><output id="spanBest">–</output></div>
+      <div class="stat"><b>Trials</b><div class="hist" id="spanHist" aria-label="Trial history"></div></div>
+      <p class="note">Turn on chunking and run it again. Grouping 9 digits as 3 chunks of 3 usually lifts your span, because each slot now holds a group.</p>
+    </div>
+  </div>
+</section>
+
+<!-- EXP 2 -->
+<section aria-labelledby="e2">
+  <div class="exp-head">
+    <span class="eyebrow">Experiment 2 · Interference</span>
+    <h2 id="e2">Forgetting over 18 seconds</h2>
+    <p class="muted">In the classic Brown–Peterson task, people saw three letters, then counted backwards to block rehearsal. Recall collapsed within about 18 seconds. Drag the delay and toggle conditions.</p>
+  </div>
+  <div class="bench">
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <div class="chart-wrap"><svg id="bpChart" viewBox="0 0 440 240" width="100%" role="img" aria-label="Recall probability by delay in seconds"></svg></div>
+      <label for="bpDelay" class="small muted">Delay: <span id="bpDelayLbl" style="font-family:var(--mono)">6 s</span></label>
+      <input type="range" id="bpDelay" min="0" max="18" step="1" value="6">
+      <div class="controls">
+        <label class="tog dis"><input type="checkbox" id="bpDistract" checked> Distraction (counting backwards)</label>
+        <label class="tog dis"><input type="checkbox" id="bpSleep"> Sleep deprived</label>
+        <label class="tog dis"><input type="checkbox" id="bpStress"> High stress</label>
+        <label class="tog boost"><input type="checkbox" id="bpRehearse"> Rehearse out loud</label>
+      </div>
+    </div>
+    <div class="readout">
+      <div class="stage" style="min-height:110px"><div class="trigram" id="bpTri">KBF</div></div>
+      <div class="stat"><b>Chance you recall it</b><output id="bpPct">–</output></div>
+      <p class="muted small" id="bpExplain"></p>
+      <p class="note">Curve shape follows Peterson and Peterson (1959). Sleep and stress effects are illustrative scalings, not fitted data.</p>
+    </div>
+  </div>
+</section>
+
+<!-- EXP 3 -->
+<section aria-labelledby="e3">
+  <div class="exp-head">
+    <span class="eyebrow">Experiment 3 · Neural drift</span>
+    <h2 id="e3">Watch a memory drift in the prefrontal cortex</h2>
+    <p class="muted">A ring of neurons holds a remembered direction as a "bump" of activity. Random noise nudges the bump while you wait, so the memory gets less precise rather than vanishing. This is the bump-attractor account from Wimmer et al. (2014).</p>
+  </div>
+  <div class="bench">
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <canvas id="ring" width="320" height="320" aria-label="Ring of neurons with an activity bump"></canvas>
+      <div class="controls" style="justify-content:center">
+        <button class="primary" id="ringStart" type="button">Present a cue</button>
+        <button id="ringRecall" type="button">Recall now</button>
+      </div>
+      <label for="ringNoise" class="small muted">Neural noise: <span id="ringNoiseLbl" style="font-family:var(--mono)">Rested</span></label>
+      <input type="range" id="ringNoise" min="1" max="5" step="1" value="1">
+    </div>
+    <div class="readout">
+      <div class="stat"><b>Seconds held</b><output id="ringT">0.0</output></div>
+      <div class="stat"><b>Recall error</b><output id="ringErr">–</output></div>
+      <p class="muted small" id="ringMsg">Press Present a cue. The amber tick is the true direction; it hides after one second. Wait, then press Recall now.</p>
+      <p class="note">Noise levels map loosely to tiredness, stress, and distraction. Longer waits plus more noise means bigger errors.</p>
+    </div>
+  </div>
+</section>
+
+<!-- EXP 4 -->
+<section aria-labelledby="e4">
+  <div class="exp-head">
+    <span class="eyebrow">Experiment 4 · Evidence</span>
+    <h2 id="e4">What improves it, by effect size</h2>
+    <p class="muted">Standardized mean difference (SMD) from meta-analyses of randomized trials. 0.2 is small, 0.5 is moderate. Grey bars mean the benefit is weak, inconsistent, or does not carry over to daily life.</p>
+  </div>
+  <div class="bench" style="grid-template-columns:minmax(0,1fr)">
+    <div class="bars" id="bars"></div>
+    <p class="note">Exercise: Zhidong et al. 2021 (older adults, 45–60 min, 3×/week, 6+ months). Brain training: Syed et al. 2024 second-order meta-analysis in adults 18–55. Mindfulness: Yakobi et al. 2021 found no working-memory gain. Sleep is not shown as an SMD but its loss reliably impairs memory, and exercise appears to work partly through better sleep.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Educational simulation, not a diagnostic tool. New or worsening forgetfulness, confusion, or trouble with daily tasks is worth checking with a doctor; causes like B12 or thyroid problems are treatable.</p>
+  <p>Sources: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5881171/">Chai et al. 2018</a> · <a href="https://clinicbarcelona.org/en/news/brain-activity-explains-loss-of-short-term-memory">Wimmer et al. 2014</a> · <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8447686/">Zhidong et al. 2021</a> · <a href="https://doaj.org/article/d9a93d82a55d4ccca52d99c4a863c3e4">Syed et al. 2024</a> · <a href="https://www.mdpi.com/2079-3200/12/11/114">Mindfulness review</a></p>
+</footer>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Exp 1: digit span ---------- */
+let spanLen=4,spanBest=0,seq='',busy=false;
+const hist=[];
+function drawHist(){$('spanHist').innerHTML=hist.slice(-14).map(h=>`<i class="${h.ok?'':'x'}" style="height:${Math.min(100,h.len*9)}%" title="${h.len} digits"></i>`).join('')}
+function runSpan(){
+  if(busy)return;busy=true;
+  seq=Array.from({length:spanLen},()=>Math.floor(Math.random()*10)).join('');
+  $('spanForm').hidden=true;$('spanStart').disabled=true;$('spanLen').textContent=spanLen;
+  const chunk=$('spanChunk').checked;
+  const items=chunk?seq.match(/.{1,3}/g):seq.split('');
+  const dur=chunk?1500:900;let i=0;
+  $('spanMsg').textContent='Memorise…';
+  const tick=()=>{
+    if(i<items.length){$('spanDigit').textContent=items[i];$('spanDigit').style.opacity=1;
+      setTimeout(()=>{$('spanDigit').style.opacity=.08;setTimeout(tick,180)},dur-180);i++}
+    else{$('spanDigit').textContent='?';$('spanDigit').style.opacity=1;$('spanMsg').textContent=`Type the ${spanLen} digits in order.`;
+      $('spanForm').hidden=false;$('spanInput').value='';$('spanInput').focus();busy=false}
+  };tick();
+}
+$('spanStart').onclick=()=>{spanLen=4;runSpan()};
+$('spanInput').oninput=()=>{$('spanErr').textContent=''};
+$('spanForm').onsubmit=e=>{
+  e.preventDefault();const v=$('spanInput').value.replace(/\D/g,'');
+  if(!v){$('spanErr').textContent='Enter the digits first.';return}
+  const ok=v===seq;hist.push({len:spanLen,ok});drawHist();$('spanForm').hidden=true;
+  if(ok){spanBest=Math.max(spanBest,spanLen);$('spanBest').textContent=spanBest;$('spanDigit').textContent=seq;
+    $('spanMsg').textContent=`Correct. Next round: ${spanLen+1} digits.`;spanLen++;setTimeout(runSpan,1400)}
+  else{$('spanDigit').textContent=seq;$('spanMsg').textContent=`It was ${seq}. Your span: ${spanBest||spanLen-1} digits. Try again with chunking on.`;$('spanStart').disabled=false;$('spanStart').textContent='Restart test'}
+};
+
+/* ---------- Exp 2: Brown–Peterson ---------- */
+const W=440,H=240,L=40,R=12,T=14,B=30;
+const X=t=>L+t/18*(W-L-R),Y=p=>T+(1-p)*(H-T-B);
+function recall(t,o){
+  if(o.rehearse||!o.distract){let p=.95-.004*t;if(o.sleep)p-=.1;if(o.stress)p-=.08;return Math.max(.05,p)}
+  let base=.9,tau=4.6,floor=.08;
+  if(o.sleep){base*=.85;tau*=.75}
+  if(o.stress){base*=.88;tau*=.8}
+  return floor+(base-floor)*Math.exp(-t/tau);
+}
+function opts(){return{distract:$('bpDistract').checked,sleep:$('bpSleep').checked,stress:$('bpStress').checked,rehearse:$('bpRehearse').checked}}
+function drawBP(){
+  const o=opts(),d=+$('bpDelay').value,ink3=css('--ink-3'),line=css('--line'),acc=css('--accent'),sig=css('--signal');
+  let s='';
+  [0,.25,.5,.75,1].forEach(p=>{s+=`<line x1="${L}" x2="${W-R}" y1="${Y(p)}" y2="${Y(p)}" stroke="${line}"/><text x="${L-6}" y="${Y(p)+4}" text-anchor="end">${p*100}%</text>`});
+  [0,3,6,9,12,15,18].forEach(t=>{s+=`<text x="${X(t)}" y="${H-10}" text-anchor="middle">${t}s</text>`});
+  const path=o2=>{let p='';for(let t=0;t<=18;t+=.25)p+=(t?'L':'M')+X(t).toFixed(1)+' '+Y(recall(t,o2)).toFixed(1);return p};
+  const ref={distract:true};
+  s+=`<path d="${path(ref)}" fill="none" stroke="${ink3}" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+  const col=(o.sleep||o.stress||(o.distract&&!o.rehearse))?sig:acc;
+  s+=`<path d="${path(o)}" fill="none" stroke="${col}" stroke-width="2.5"/>`;
+  const p=recall(d,o);
+  s+=`<line x1="${X(d)}" x2="${X(d)}" y1="${T}" y2="${H-B}" stroke="${ink3}" stroke-width="1"/><circle cx="${X(d)}" cy="${Y(p)}" r="5.5" fill="${col}"/>`;
+  s+=`<text x="${W-R}" y="${T+12}" text-anchor="end">dashed: classic 1959 curve</text>`;
+  $('bpChart').innerHTML=s;
+  $('bpDelayLbl').textContent=d+' s';
+  $('bpPct').textContent=Math.round(p*100)+'%';
+  $('bpTri').style.opacity=Math.max(.06,p).toFixed(2);
+  $('bpTri').style.filter=`blur(${((1-p)*4).toFixed(1)}px)`;
+  $('bpExplain').textContent=o.rehearse||!o.distract?'Repeating the letters keeps them active, so they barely fade. The loss comes from being stopped from rehearsing.':
+    (p<.25?'New input has overwritten the trace. Most of the loss happens in the first 6 seconds.':'The trace is still active but competing input is eroding it.');
+}
+['bpDelay','bpDistract','bpSleep','bpStress','bpRehearse'].forEach(id=>$(id).addEventListener('input',drawBP));
+drawBP();
+
+/* ---------- Exp 3: bump attractor ---------- */
+const cv=$('ring'),cx=cv.getContext('2d'),N=48;
+const dpr=window.devicePixelRatio||1;cv.width=320*dpr;cv.height=320*dpr;cv.style.width='320px';cv.style.height='320px';cx.scale(dpr,dpr);
+const noiseNames=['Rested','Mild fatigue','Tired','Sleep deprived','Stressed + distracted'];
+let truth=null,bump=null,held=0,running=false,showCue=0,last=0,recalled=false;
+function drawRing(){
+  const ink3=css('--ink-3'),acc=css('--accent'),sig=css('--signal'),line=css('--line');
+  cx.clearRect(0,0,320,320);
+  cx.beginPath();cx.arc(160,160,118,0,7);cx.strokeStyle=line;cx.lineWidth=1;cx.stroke();
+  for(let i=0;i<N;i++){
+    const a=i/N*Math.PI*2;let act=.12;
+    if(bump!==null)act=.08+.92*Math.exp(4*(Math.cos(a-bump)-1));
+    const x=160+118*Math.cos(a),y=160+118*Math.sin(a);
+    cx.beginPath();cx.arc(x,y,4+act*6,0,7);cx.fillStyle=acc;cx.globalAlpha=.15+.85*act;cx.fill();cx.globalAlpha=1;
+  }
+  if(truth!==null&&(showCue>0||recalled)){
+    cx.beginPath();cx.moveTo(160+70*Math.cos(truth),160+70*Math.sin(truth));cx.lineTo(160+96*Math.cos(truth),160+96*Math.sin(truth));
+    cx.strokeStyle=sig;cx.lineWidth=4;cx.lineCap='round';cx.stroke();
+  }
+  if(recalled&&bump!==null){
+    cx.beginPath();cx.moveTo(160,160);cx.lineTo(160+96*Math.cos(bump),160+96*Math.sin(bump));cx.strokeStyle=acc;cx.lineWidth=2;cx.stroke();
+  }
+  cx.fillStyle=ink3;cx.font='12px "IBM Plex Mono", monospace';cx.textAlign='center';
+  cx.fillText(bump===null?'idle':(recalled?'recalled':(showCue>0?'cue on':'holding…')),160,165);
+}
+function step(ts){
+  if(!running)return;
+  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+  if(showCue>0){showCue-=dt;if(showCue<=0)showCue=0}
+  else{held+=dt;const sigma=(+$('ringNoise').value)*0.11;bump+=sigma*Math.sqrt(dt)*(Math.random()*2-1)*1.7}
+  $('ringT').textContent=held.toFixed(1);
+  drawRing();requestAnimationFrame(step);
+}
+$('ringStart').onclick=()=>{truth=Math.random()*Math.PI*2;bump=truth;held=0;showCue=1;recalled=false;running=true;last=performance.now();
+  $('ringErr').textContent='–';$('ringMsg').textContent='Holding the direction. The bump is drifting. Press Recall now whenever you like.';requestAnimationFrame(step)};
+$('ringRecall').onclick=()=>{
+  if(bump===null||recalled){$('ringMsg').textContent='Press Present a cue first.';return}
+  running=false;recalled=true;let e=Math.abs(((bump-truth)*180/Math.PI+540)%360-180);
+  $('ringErr').textContent=Math.round(e)+'°';
+  $('ringMsg').textContent=`After ${held.toFixed(1)} s the memory pointed ${Math.round(e)}° off. Raise the noise and wait longer to see the error grow.`;drawRing()};
+$('ringNoise').oninput=()=>{$('ringNoiseLbl').textContent=noiseNames[$('ringNoise').value-1]};
+drawRing();
+
+/* ---------- Exp 4: evidence bars ---------- */
+const ev=[
+ {n:'Exercise, multi-component',v:.30,s:'0.30',strong:true},
+ {n:'Working-memory training apps',v:.335,s:'0.34',strong:false,t:'Small, little real-life transfer'},
+ {n:'Mindfulness',v:.05,s:'≈0',strong:false},
+ {n:'Memory supplements',v:.03,s:'mixed',strong:false},
+];
+$('bars').innerHTML=ev.map(e=>`<div class="bar"><span>${e.n}${e.t?`<br><span class="muted small">${e.t}</span>`:''}</span><div class="track"><span class="${e.strong?'':'weak'}" style="width:${Math.max(3,e.v/.6*100)}%"></span></div><output>${e.s}</output></div>`).join('')+
+ `<div class="bar small muted"><span></span><div style="position:relative;height:16px;font-family:var(--mono);font-size:11px"><span style="position:absolute;left:0">0</span><span style="position:absolute;left:33.3%;transform:translateX(-50%)">0.2</span><span style="position:absolute;left:83.3%;transform:translateX(-50%)">0.5</span></div><span></span></div>`;
+
+/* ---------- Self-check ---------- */
+(function(){
+const STEPS=['About you','Everyday lapses','Learn words','Forward digits','Backward digits','Block taps','Word recall','Report'];
+const WORDS=['candle','river','jacket','pepper','tiger','window','garden','hammer','violin','orange'];
+const Q=[
+ 'Forgetting why you walked into a room',
+ 'Losing track of what you were saying mid-sentence',
+ 'Forgetting a name right after being introduced',
+ 'Re-reading a paragraph because nothing stuck',
+ 'Forgetting whether you already did something (locked the door, took a tablet)',
+ 'Missing appointments or tasks you meant to do',
+ 'Misplacing everyday things like keys or your phone',
+ 'Struggling to follow a conversation or a film plot',
+ 'Forgetting a phone number or OTP before you finish typing it',
+ 'Needing reminders for things you used to remember easily'];
+const FREQ=['Never','Rarely','Sometimes','Often','Very often'];
+const FLAGS=[
+ 'Getting lost or disoriented somewhere familiar',
+ 'Family or friends have noticed and seem worried',
+ 'It has clearly got worse over the last 6–12 months',
+ 'Repeating the same question or story without realising',
+ 'Memory problems started after a head injury or illness'];
+const CONTRIB=['Under 6 hours of sleep most nights','High stress lately','Low mood or loss of interest','More than 2 alcoholic drinks most days','Started a new medication','Constant multitasking or phone interruptions'];
+/* approximate adult norms: mean, SD by age band */
+const NORMS={
+ dsf:{label:'Forward digit span',max:10,b:[[6.8,1.2],[6.5,1.2],[6.0,1.1],[5.6,1.1]],src:'Approximate, compiled from adult span studies'},
+ dsb:{label:'Backward digit span',max:9,b:[[5.0,1.3],[4.7,1.2],[4.3,1.1],[4.0,1.1]],src:'Approximate, compiled from adult span studies'},
+ corsi:{label:'Block-tapping span',max:9,b:[[6.2,1.3],[6.2,1.3],[5.5,1.1],[5.1,1.0]],src:'Kessels et al. 2000 (under 60); approximate above'},
+ imm:{label:'Immediate word recall',max:10,b:[[6.8,1.5],[6.4,1.5],[5.6,1.5],[5.0,1.5]],src:'Approximate reference, not a published norm'},
+ del:{label:'Delayed word recall',max:10,b:[[6.4,2.0],[5.8,2.0],[4.6,2.0],[3.9,2.0]],src:'Approximate reference, not a published norm'}};
+const S={step:0,age:null,q:{},flags:new Set(),contrib:new Set(),sc:{}};
+const body=$('ckBody');
+const band=a=>a<40?0:a<60?1:a<75?2:3;
+const erf=x=>{const t=1/(1+.3275911*Math.abs(x));const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x);return x>=0?y:-y};
+const Phi=z=>.5*(1+erf(z/Math.SQRT2));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function steps(){$('ckSteps').innerHTML=STEPS.map((s,i)=>`<li class="${i===S.step?'on':i<S.step?'done':''}">${s}</li>`).join('')}
+function go(n){S.step=n;steps();[stAge,stQ,stLearn,()=>stSpan('dsf'),()=>stSpan('dsb'),stCorsi,stDelayed,stReport][n]();
+  if(n>0)document.getElementById('check').scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'})}
+
+function stAge(){
+  body.innerHTML=`<div class="ck"><h3>How old are you?</h3><p class="muted small">Memory spans shrink a little with age, so your scores are compared with your age group.</p>
+  <form id="ageF" class="controls"><label for="ageIn" class="small muted">Age in years</label><input type="text" id="ageIn" inputmode="numeric" style="width:110px;letter-spacing:0" autocomplete="off"><button class="primary" type="submit">Start self-check</button><div class="err" id="ageErr" style="flex-basis:100%"></div></form>
+  <p class="note">The report shows where each score falls against healthy adults. It cannot diagnose a condition.</p></div>`;
+  $('ageIn').oninput=()=>$('ageErr').textContent='';
+  $('ageF').onsubmit=e=>{e.preventDefault();const a=parseInt($('ageIn').value,10);
+    if(!(a>=18&&a<=100)){$('ageErr').textContent='Enter an age between 18 and 100.';return}S.age=a;go(1)};
+}
+function stQ(){
+  body.innerHTML=`<div class="ck"><h3>How often has this happened in the last month?</h3>
+  <form id="qF">${Q.map((t,i)=>`<div class="q"><fieldset><legend>${i+1}. ${t}</legend>${FREQ.map((f,v)=>`<label class="opt"><input type="radio" name="q${i}" value="${v}" ${S.q[i]===v?'checked':''}> ${f}</label>`).join('')}</fieldset></div>`).join('')}
+  <div class="q"><fieldset><legend>Do any of these apply? <span class="muted small">(tick all that fit)</span></legend>${FLAGS.map((f,i)=>`<label class="opt"><input type="checkbox" data-f="${i}"> ${f}</label>`).join('')}</fieldset></div>
+  <div class="q"><fieldset><legend>Possible everyday contributors <span class="muted small">(tick all that fit)</span></legend>${CONTRIB.map((f,i)=>`<label class="opt"><input type="checkbox" data-c="${i}"> ${f}</label>`).join('')}</fieldset></div>
+  <div class="controls"><button class="primary" type="submit">Continue to the tests</button><span class="err" id="qErr"></span></div></form></div>`;
+  $('qF').onchange=()=>$('qErr').textContent='';
+  $('qF').onsubmit=e=>{e.preventDefault();
+    for(let i=0;i<Q.length;i++){const c=document.querySelector(`input[name=q${i}]:checked`);if(!c){$('qErr').textContent=`Answer question ${i+1} first.`;return}S.q[i]=+c.value}
+    S.flags=new Set([...document.querySelectorAll('[data-f]:checked')].map(x=>+x.dataset.f));
+    S.contrib=new Set([...document.querySelectorAll('[data-c]:checked')].map(x=>+x.dataset.c));go(2)};
+}
+function stLearn(){
+  body.innerHTML=`<div class="ck"><h3>Learn these 10 words</h3><p class="muted small">You get 30 seconds. You'll recall them now and again in a few minutes.</p>
+  <div class="words" id="wl">${WORDS.map(w=>`<span>${w}</span>`).join('')}</div>
+  <div class="controls"><button class="primary" id="wlGo" type="button">I'm ready, start the 30 seconds</button><span class="muted small" id="wlT"></span></div></div>`;
+  $('wl').style.filter='blur(7px)';
+  $('wlGo').onclick=async()=>{$('wlGo').hidden=true;$('wl').style.filter='none';
+    for(let s=30;s>0;s--){$('wlT').textContent=s+' s left';await sleep(1000)}recall('imm',()=>go(3))};
+}
+function recall(key,next){
+  body.innerHTML=`<div class="ck"><h3>${key==='imm'?'Type every word you remember':'Delayed recall: type the 10 words from earlier'}</h3>
+  <p class="muted small">Any order. Separate words with spaces or commas.</p>
+  <form id="rF" class="ck" style="gap:10px"><label for="rIn" class="sr-only">Words you remember</label><textarea id="rIn" autocomplete="off" spellcheck="false"></textarea>
+  <div class="controls"><button class="primary" type="submit">Submit</button><span class="err" id="rErr"></span></div></form></div>`;
+  $('rIn').focus();$('rIn').oninput=()=>$('rErr').textContent='';
+  $('rF').onsubmit=e=>{e.preventDefault();const typed=$('rIn').value.toLowerCase().split(/[\s,;.]+/).filter(Boolean);
+    if(!typed.length){$('rErr').textContent='Type at least one word, or a dash if you remember none.';return}
+    const hit=new Set(typed.map(w=>w.replace(/s$/,'')).filter(w=>WORDS.includes(w)));S.sc[key]=hit.size;next()};
+}
+function stSpan(key){
+  const back=key==='dsb';
+  body.innerHTML=`<div class="ck"><h3>${back?'Backward digits':'Forward digits'}</h3>
+  <p class="muted small">${back?'Type the digits in <b>reverse</b> order. If you see 3 8 1, type 183.':'Type the digits in the same order.'} Two tries at each length; the test stops when you miss both.</p>
+  <div class="stage"><div class="digit" id="sd">·</div><p class="muted small" id="sm">Length ${back?2:3}</p></div>
+  <form id="sF" class="controls" hidden><label for="sIn" class="small muted">Answer</label><input type="text" id="sIn" inputmode="numeric" autocomplete="off"><button class="primary" type="submit">Enter</button><span class="err" id="sErr"></span></form>
+  <button class="primary" id="sGo" type="button">Begin</button></div>`;
+  let len=back?2:3,trial=0,passedLen=back?1:2,anyPass=false;
+  const run=async()=>{
+    const seq=Array.from({length:len},()=>Math.floor(Math.random()*10)).join('');
+    $('sm').textContent=`Length ${len} · try ${trial+1} of 2`;$('sF').hidden=true;
+    for(const d of seq){$('sd').textContent=d;await sleep(800);$('sd').textContent='·';await sleep(200)}
+    $('sd').textContent='?';$('sF').hidden=false;$('sIn').value='';$('sIn').focus();
+    $('sIn').oninput=()=>$('sErr').textContent='';
+    $('sF').onsubmit=e=>{e.preventDefault();const v=$('sIn').value.replace(/\D/g,'');
+      if(!v){$('sErr').textContent='Type the digits first.';return}
+      const ok=v===(back?[...seq].reverse().join(''):seq);if(ok){anyPass=true;passedLen=len}
+      trial++;
+      if(trial===2){if(!anyPass||len>=NORMS[key].max){S.sc[key]=passedLen;go(S.step+1);return}len++;trial=0;anyPass=false}
+      $('sF').hidden=true;$('sd').textContent=ok?'✓':'✗';setTimeout(run,700)};
+  };
+  $('sGo').onclick=()=>{$('sGo').hidden=true;run()};
+}
+function stCorsi(){
+  const P=[[10,12],[58,6],[78,30],[22,44],[48,38],[70,62],[8,74],[38,72],[62,84]];
+  body.innerHTML=`<div class="ck"><h3>Block taps</h3><p class="muted small">Watch the blocks light up, then tap them in the same order. Two tries per length.</p>
+  <div class="corsi" id="cb">${P.map((p,i)=>`<button type="button" data-i="${i}" aria-label="Block ${i+1}" style="left:${p[0]}%;top:${p[1]}%" disabled></button>`).join('')}</div>
+  <p class="muted small" id="cm" style="text-align:center">Length 3</p><button class="primary" id="cGo" type="button">Begin</button></div>`;
+  const bt=[...$('cb').querySelectorAll('button')];
+  let len=3,trial=0,passed=2,anyPass=false;
+  const run=async()=>{
+    const seq=[];while(seq.length<len){const r=Math.floor(Math.random()*9);if(seq[seq.length-1]!==r&&!seq.includes(r))seq.push(r)}
+    bt.forEach(b=>{b.disabled=true;b.className=''});$('cm').textContent=`Length ${len} · try ${trial+1} of 2 · watch`;await sleep(500);
+    for(const i of seq){bt[i].className='lit';await sleep(700);bt[i].className='';await sleep(250)}
+    $('cm').textContent='Your turn';const got=[];bt.forEach(b=>b.disabled=false);
+    bt.forEach(b=>b.onclick=()=>{const i=+b.dataset.i;got.push(i);b.className='hit';setTimeout(()=>b.className='',200);
+      if(got.length===len){bt.forEach(x=>x.disabled=true);const ok=got.every((g,k)=>g===seq[k]);
+        if(ok){anyPass=true;passed=len}trial++;$('cm').textContent=ok?'Correct':'Not quite';
+        if(trial===2){if(!anyPass||len>=9){S.sc.corsi=passed;setTimeout(()=>go(6),600);return}len++;trial=0;anyPass=false}
+        setTimeout(run,800)}});
+  };
+  $('cGo').onclick=()=>{$('cGo').hidden=true;run()};
+}
+function stDelayed(){recall('del',()=>go(7))}
+function stReport(){
+  const b=band(S.age),rows=[];let zs=[];
+  for(const k of ['dsf','dsb','corsi','imm','del']){const [m,sd]=NORMS[k].b[b],v=S.sc[k];const z=(v-m)/sd;zs.push(z);
+    const pct=Math.max(1,Math.min(99,Math.round(Phi(z)*100)));
+    const cls=z>=-1?'ok':z>=-1.5?'mid':'low',lbl=z>=-1?'Typical range':z>=-1.5?'Low end of typical':'Below typical';
+    rows.push(`<div class="card"><b>${NORMS[k].label}</b><span class="big">${v}<span class="muted" style="font-size:1rem"> / ${k==='imm'||k==='del'?10:'span'}</span></span>
+      <span class="pill ${cls}">${lbl}</span><span class="small muted">Typical for your age: ${(m-sd).toFixed(1)}–${(m+sd).toFixed(1)} · about ${pct}th percentile</span>
+      <div class="pbar" aria-label="Percentile ${pct}"><i style="left:calc(${pct}% - 1px)"></i></div><span class="small" style="color:var(--ink-3)">${NORMS[k].src}</span></div>`)}
+  const comp=zs.reduce((a,c)=>a+c,0)/zs.length,cpct=Math.max(1,Math.min(99,Math.round(Phi(comp)*100)));
+  const qs=Object.values(S.q).reduce((a,c)=>a+c,0);
+  const qlbl=qs<=12?'Occasional lapses, common in healthy adults':qs<=22?'Noticeable everyday lapses':'Frequent everyday lapses';
+  const flags=[...S.flags].map(i=>FLAGS[i]),contrib=[...S.contrib].map(i=>CONTRIB[i]);
+  let verdict,warn=false;
+  if(flags.length||comp<-1.5){warn=true;verdict='Worth a check-up. '+(flags.length?'You ticked warning signs that a doctor should hear about, whatever your test scores. ':'')+(comp<-1.5?'Your overall test performance was well below typical for your age. ':'')+'A GP or neurologist can run proper tests and simple blood work (B12, thyroid) to rule out treatable causes.'}
+  else if(comp<-1||qs>22){warn=true;verdict='Some signs worth watching. Your results lean low or you report frequent lapses. Common causes are poor sleep, stress, low mood, and constant interruptions. Address those for 2–4 weeks and retake this check; if it stays low, talk to a doctor.'}
+  else verdict='Your results fall in the typical range for your age. Everyday lapses like these are normal and usually come from attention and sleep rather than memory loss.';
+  body.innerHTML=`<div class="ck"><h3>Your report</h3>
+  <div class="verdict ${warn?'warn':''}"><p>${verdict}</p></div>
+  <div class="res"><div class="card"><b>Overall test score</b><span class="big">${cpct}<span class="muted" style="font-size:1rem">th percentile</span></span><span class="small muted">Average of your five task scores against age ${['18–39','40–59','60–74','75+'][b]} norms</span><div class="pbar"><i style="left:calc(${cpct}% - 1px)"></i></div></div>
+  <div class="card"><b>Everyday lapses</b><span class="big">${qs}<span class="muted" style="font-size:1rem"> / 40</span></span><span class="pill ${qs<=12?'ok':qs<=22?'mid':'low'}">${qlbl}</span><span class="small muted">Higher means more lapses. This questionnaire has no clinical cut-off.</span></div></div>
+  <div class="res">${rows.join('')}</div>
+  ${flags.length?`<div class="card"><b>Warning signs you ticked</b><ul class="flags">${flags.map(f=>`<li>${f}</li>`).join('')}</ul></div>`:''}
+  ${contrib.length?`<div class="card"><b>Likely contributors to fix first</b><ul class="flags">${contrib.map(f=>`<li>${f}</li>`).join('')}</ul></div>`:''}
+  <p class="note">How scoring works: each task score becomes a z-score, (your score − age-group mean) ÷ SD, then a percentile from the normal distribution. Below the 16th percentile (z under −1) is marked low; below the 7th (z under −1.5) is marked below typical, a common screening threshold. The shaded strip on each bar is the bottom 16%. Some norms are approximate, as labelled, so treat percentiles as a guide within roughly ±10 points. Tiredness, distraction, or a bad night can lower any single attempt.</p>
+  <div class="controls"><button class="primary" id="again" type="button">Retake the self-check</button></div></div>`;
+  $('again').onclick=()=>{S.sc={};S.q={};go(0)};
+}
+steps();stAge();
+})();
+
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{drawBP();drawRing()});
+new MutationObserver(()=>{drawBP();drawRing()}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+</script>
+
+</body>
+</html>
