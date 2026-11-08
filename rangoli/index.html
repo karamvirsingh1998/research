@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Family Rangoli · Shubh Deepawali</title>
-<meta name="description" content="Every family member fills one piece. The rangoli completes only when everyone joins.">
-<meta property="og:title" content="Fill your piece of our family rangoli 🪔">
-<meta property="og:description" content="Every family member fills one piece. It completes only when everyone joins.">
+<title>Ek Saath · A rangoli we complete together</title>
+<meta name="description" content="Everyone fills one piece. The rangoli completes only when all of you join.">
+<meta property="og:title" content="Ek Saath 🪔 Fill your piece of our rangoli">
+<meta property="og:description" content="A rangoli we complete together. It lights up only when everyone fills their piece.">
 <meta name="theme-color" content="#0B1026">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪔</text></svg>">
 <style>
@@ -73,15 +73,15 @@
 
   <!-- CREATE VIEW -->
   <section id="createView" class="hidden">
-    <h1>🪔 Family rangoli</h1>
-    <p class="sub">Create a rangoli for your family. Everyone fills one piece, and it completes only when the whole family has joined.</p>
+    <h1>🪔 Ek Saath</h1>
+    <p class="sub">A rangoli we complete together. Make one for your family, friends or any group. Everyone fills one piece, and it lights up only when all of you have joined.</p>
     <label for="gname">Rangoli name</label>
-    <input id="gname" type="text" maxlength="60" placeholder="Singh family Diwali 2026">
+    <input id="gname" type="text" maxlength="60" placeholder="Hostel gang Diwali 2026">
     <label for="pieces">Number of pieces: <b id="pout">12</b></label>
     <input id="pieces" type="range" min="2" max="100" step="1" value="12">
     <label>Choose a design</label>
     <div class="designs" id="designs" role="radiogroup" aria-label="Rangoli design"></div>
-    <p class="muted" style="margin:4px 0 0">Tip: one piece per family member. 12–24 works best on phones.</p>
+    <p class="muted" style="margin:4px 0 0">Tip: one piece per person. 12–24 works best on phones.</p>
     <p id="cerr" class="err"></p>
     <button id="createBtn" class="btn primary">Create rangoli</button>
   </section>
@@ -97,7 +97,7 @@
   <!-- BOARD VIEW -->
   <section id="boardView" class="hidden">
     <div id="hostBanner" class="banner hidden">
-      Your rangoli is ready. Share the link with your family so they can fill their pieces.
+      Your rangoli is ready. Share the link with your family or friends so everyone can fill their piece.
       <button id="shareLinkBtn" class="btn wa">Share on WhatsApp</button>
       <button id="copyLinkBtn" class="btn ghost">Copy link</button>
     </div>
@@ -106,7 +106,7 @@
     <div class="bar"><div id="bar"></div></div>
     <p class="muted" id="prog" style="margin:0 0 10px"></p>
 
-    <svg id="rg" viewBox="-210 -210 420 420" aria-label="Family rangoli"></svg>
+    <svg id="rg" viewBox="-210 -210 420 420" aria-label="Ek Saath rangoli"></svg>
 
     <div class="card" id="joinCard">
       <div id="joinForm">
@@ -127,7 +127,7 @@
         <b>Who's joined</b><span class="muted" id="leftTxt"></span>
       </div>
       <div class="chips" id="joined"></div>
-      <button id="remindBtn" class="btn wa">Remind the family on WhatsApp</button>
+      <button id="remindBtn" class="btn wa">Remind everyone on WhatsApp</button>
     </div>
   </section>
 </div>
@@ -137,7 +137,7 @@
     <div style="font-size:56px">🪔✨</div>
     <h2>Rangoli complete!</h2>
     <p class="sub" id="celebMsg"></p>
-    <button id="shareDoneBtn" class="btn wa">Tell the family on WhatsApp</button>
+    <button id="shareDoneBtn" class="btn wa">Tell everyone on WhatsApp</button>
     <button id="saveImgBtn" class="btn primary">Save rangoli image</button>
     <button id="closeCeleb" class="btn ghost">See the rangoli</button>
   </div>
@@ -149,7 +149,7 @@
   <div>
     <div class="bigdiya">🪔</div>
     <h1>Shubh Deepawali</h1>
-    <p id="splashSub">Light up the night together with your family</p>
+    <p id="splashSub">Ek Saath: a rangoli we complete together</p>
     <p class="hint">Tap anywhere to light the sky 🎆</p>
   </div>
 </div>
@@ -530,12 +530,12 @@ function saveImage() {
     x.font = '700 52px system-ui, sans-serif'; x.fillText(R.name, 540, 90);
     x.drawImage(img, 90, 130, 900, 900);
     x.font = '32px system-ui, sans-serif'; x.fillStyle = '#FAC775';
-    x.fillText(`${R.pieces} of us lit this together · Shubh Deepawali 🪔`, 540, 1100);
+    x.fillText(`Ek Saath · ${R.pieces} of us lit this together · Shubh Deepawali`, 540, 1100);
     x.font = '26px system-ui, sans-serif'; x.fillStyle = '#B4B2A9';
     const names = [...filled.values()].map(p => p.name).join(' · ');
     wrapText(x, names, 540, 1150, 960, 34);
     URL.revokeObjectURL(url);
-    const a = document.createElement('a'); a.download = 'family-rangoli.png'; a.href = c.toDataURL('image/png'); a.click();
+    const a = document.createElement('a'); a.download = 'ek-saath-rangoli.png'; a.href = c.toDataURL('image/png'); a.click();
   };
   img.src = url;
 }
@@ -554,7 +554,7 @@ async function openBoard(id, isHost) {
   try {
     R = await store.get(id);
     if (!R) { show('errorView'); return; }
-    document.title = R.name + ' · Family rangoli';
+    document.title = R.name + ' · Ek Saath';
     if (!isHost) $('splashSub').textContent = `You're invited to fill your piece of "${R.name}"`;
     $('title').textContent = R.name;
     $('me').value = ls.get('rangoli-name') || '';
@@ -595,15 +595,15 @@ $('createBtn').addEventListener('click', async () => {
 });
 
 $('autoBtn').addEventListener('click', autoClaim);
-$('shareLinkBtn').addEventListener('click', () => wa(`🪔 Shubh Deepawali! I made a rangoli for our family. It has ${R.pieces} pieces and only completes when everyone fills theirs. Fill yours here: ${link()}`));
+$('shareLinkBtn').addEventListener('click', () => wa(`🪔 Shubh Deepawali! I made an Ek Saath rangoli for us: "${R.name}". It has ${R.pieces} pieces and lights up only when every one of us fills theirs. Fill yours here: ${link()}`));
 $('copyLinkBtn').addEventListener('click', async () => { try { await navigator.clipboard.writeText(link()); toast('Link copied'); } catch { prompt('Copy this link', link()); } });
 $('remindBtn').addEventListener('click', () => {
   const left = R.pieces - filled.size;
   wa(left === 1
-    ? `🪔 Only ONE piece left in "${R.name}"! Whoever hasn't joined, the whole family is waiting for you 😄 ${link()}`
+    ? `🪔 Only ONE piece left in "${R.name}"! Whoever hasn't joined, everyone is waiting for you 😄 ${link()}`
     : `🪔 ${filled.size} of us have lit our pieces in "${R.name}". ${left} pieces still empty. Light up yours: ${link()}`);
 });
-$('shareDoneBtn').addEventListener('click', () => wa(`🪔✨ Our family rangoli "${R.name}" is complete! All ${R.pieces} of us lit it together. Shubh Deepawali! ${link()}`));
+$('shareDoneBtn').addEventListener('click', () => wa(`🪔✨ Our Ek Saath rangoli "${R.name}" is complete! All ${R.pieces} of us lit it together. Shubh Deepawali! ${link()}`));
 $('saveImgBtn').addEventListener('click', saveImage);
 $('closeCeleb').addEventListener('click', () => $('celebrate').classList.add('hidden'));
 
