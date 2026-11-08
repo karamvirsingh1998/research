@@ -122,6 +122,15 @@
       </div>
     </div>
 
+    <div class="card hidden" id="doneCard" style="text-align:center">
+      <p style="font-size:19px;margin:4px 0;font-weight:600">🪔✨ Rangoli complete!</p>
+      <p class="muted" id="doneTxt" style="margin:0"></p>
+      <button id="shareDoneBtn2" class="btn wa">Share on WhatsApp</button>
+      <button id="saveImgBtn2" class="btn primary">Save rangoli image</button>
+      <button id="replayBtn" class="btn ghost">Light the fireworks again 🎆</button>
+      <a class="btn ghost" href="./" style="text-decoration:none">Make one for another group</a>
+    </div>
+
     <div class="card">
       <div class="row" style="justify-content:space-between">
         <b>Who's joined</b><span class="muted" id="leftTxt"></span>
@@ -452,6 +461,9 @@ function updateProgress(lastName) {
   $('center').textContent = `${n}/${N}`;
   $('leftTxt').textContent = left ? `${left} ${left === 1 ? 'piece' : 'pieces'} left` : 'Everyone is in';
   $('remindBtn').classList.toggle('hidden', left === 0);
+  $('doneCard').classList.toggle('hidden', left !== 0);
+  $('joinCard').classList.toggle('hidden', left === 0);
+  if (left === 0) { $('hostBanner').classList.add('hidden'); $('doneTxt').textContent = `All ${N} of you lit "${R.name}" together. Shubh Deepawali!`; }
   const me = ls.get(myKey());
   if (me && els[me.idx]) els[me.idx].path.classList.add('mine');
   $('joinForm').classList.toggle('hidden', !!me || left === 0);
@@ -603,8 +615,12 @@ $('remindBtn').addEventListener('click', () => {
     ? `🪔 Only ONE piece left in "${R.name}"! Whoever hasn't joined, everyone is waiting for you 😄 ${link()}`
     : `🪔 ${filled.size} of us have lit our pieces in "${R.name}". ${left} pieces still empty. Light up yours: ${link()}`);
 });
-$('shareDoneBtn').addEventListener('click', () => wa(`🪔✨ Our Ek Saath rangoli "${R.name}" is complete! All ${R.pieces} of us lit it together. Shubh Deepawali! ${link()}`));
+const shareDone = () => wa(`🪔✨ Our Ek Saath rangoli "${R.name}" is complete! All ${R.pieces} of us lit it together. Shubh Deepawali! ${link()}`);
+$('shareDoneBtn').addEventListener('click', shareDone);
+$('shareDoneBtn2').addEventListener('click', shareDone);
 $('saveImgBtn').addEventListener('click', saveImage);
+$('saveImgBtn2').addEventListener('click', saveImage);
+$('replayBtn').addEventListener('click', () => { confetti(); FX.show(12, 250); });
 $('closeCeleb').addEventListener('click', () => $('celebrate').classList.add('hidden'));
 
 const rid = new URLSearchParams(location.search).get('r');
