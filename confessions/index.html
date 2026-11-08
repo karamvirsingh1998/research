@@ -25,6 +25,10 @@
   .lantern svg { width: 54px; height: 82px; animation: sway 3.5s ease-in-out infinite; transform-origin: 50% 0; filter: drop-shadow(0 0 16px rgba(239,159,39,.75)); }
   .lantern .card { margin-top: 2px; background: rgba(42,33,72,.9); border: 1px solid #534AB7; border-radius: 14px; padding: 8px 12px; font-size: 14px; line-height: 1.4; text-align: center; word-wrap: break-word; max-width: 220px; }
   .lantern .same { margin-top: 4px; font-size: 12px; color: #FAC775; min-height: 16px; }
+  .lantern .ago { display: block; font-size: 11px; color: #B4B2A9; margin-bottom: 3px; }
+  .lantern .card { position: relative; }
+  .lantern .flag { position: absolute; top: -9px; right: -9px; width: 24px; height: 24px; border-radius: 50%; background: #141A36; border: 1px solid #262E5A; color: #888780; font-size: 11px; line-height: 22px; padding: 0; cursor: pointer; }
+  .lantern.older .card { background: rgba(26,33,64,.88); }
   .lantern.mine .card { border-color: #EF9F27; box-shadow: 0 0 0 1px rgba(239,159,39,.35); }
   @keyframes rise { from { transform: translateY(0) } to { transform: translateY(calc(-100vh - 280px)) } }
   @keyframes sway { 0%,100% { transform: rotate(-5deg) } 50% { transform: rotate(5deg) } }
@@ -106,8 +110,8 @@
   <div>
     <div class="big" id="introKandil"></div>
     <h2>Diwali Confessions</h2>
-    <p>Let go of one Diwali secret. It floats up as a glowing kandil for everyone online right now.</p>
-    <p class="rules">No names, no numbers, no links. Be kind.<br>Completely anonymous. No login, no names, and your confession is never linked to you.</p>
+    <p>Let go of one Diwali secret. It floats up as a glowing kandil for everyone on the page tonight, including people who join later.</p>
+    <p class="rules">No names, no numbers, no links. Be kind. Tap ⚑ to report anything hurtful.<br>Completely anonymous. No login, no names, and your confession is never linked to you.</p>
     <button id="enter">Light up the sky ✨</button>
   </div>
 </div>
@@ -215,18 +219,36 @@ for (let i = 0; i < 90; i++) {
 $('sky').addEventListener('pointerdown', e => { if (e.target === $('sky') || e.target.classList.contains('star')) FX.launch(e.clientX, e.clientY); });
 
 const lanterns = new Map();
-function addLantern({ id, text, mine }) {
-  if (lanterns.has(id)) return;
+let hiddenIds = new Set(); try { hiddenIds = new Set(JSON.parse(localStorage.getItem('dc-hidden') || '[]')); } catch {}
+function ago(ts) {
+  const m = Math.max(1, Math.round((Date.now() - new Date(ts).getTime()) / 60000));
+  if (m < 60) return `earlier tonight · ${m} min ago`;
+  const h = Math.round(m / 60); return `earlier · ${h}h ago`;
+}
+function addLantern({ id, text, mine, older, createdAt, feels }) {
+  if (lanterns.has(id) || hiddenIds.has(id)) return false;
   if (lanterns.size > 30) { const first = lanterns.keys().next().value; lanterns.get(first).el.remove(); lanterns.delete(first); }
   const el = document.createElement('div');
-  el.className = 'lantern' + (mine ? ' mine' : '');
+  el.className = 'lantern' + (mine ? ' mine' : '') + (older ? ' older' : '');
   const left = Math.max(4, Math.random() * (innerWidth - 224));
   el.style.left = left + 'px';
   const dur = 22 + Math.random() * 10;
   el.style.animationDuration = dur + 's';
   const color = COLS[Math.abs([...id].reduce((h, ch) => h * 31 + ch.charCodeAt(0) | 0, 7)) % COLS.length];
   el.innerHTML = kandil(color);
-  const card = document.createElement('div'); card.className = 'card'; card.textContent = text;
+  const card = document.createElement('div'); card.className = 'card';
+  if (older && createdAt) { const a = document.createElement('span'); a.className = 'ago'; a.textContent = ago(createdAt); card.appendChild(a); }
+  card.appendChild(document.createTextNode(text));
+  if (!mine) {
+    const flag = document.createElement('button'); flag.className = 'flag'; flag.textContent = '⚑'; flag.setAttribute('aria-label', 'Report this confession');
+    flag.addEventListener('click', e => {
+      e.stopPropagation();
+      save('confession_reports', { confession_id: id });
+      hiddenIds.add(id); try { localStorage.setItem('dc-hidden', JSON.stringify([...hiddenIds].slice(-300))); } catch {}
+      el.remove(); lanterns.delete(id); toast('Reported. You won\'t see it again.');
+    });
+    card.appendChild(flag);
+  }
   const same = document.createElement('div'); same.className = 'same';
   el.append(card, same);
   const L = { el, same, count: 0, tapped: false };
@@ -239,9 +261,11 @@ function addLantern({ id, text, mine }) {
   });
   $('sky').appendChild(el);
   lanterns.set(id, L);
+  if (feels) bumpSame(id, feels);
   setTimeout(() => { el.remove(); lanterns.delete(id); }, dur * 1000 + 500);
   $('empty').classList.add('gone');
   if (mine) FX.burst(left + 110, innerHeight - 120, 60);
+  return true;
 }
 function bumpSame(id, n) {
   const L = lanterns.get(id); if (!L) return;
@@ -284,6 +308,34 @@ if (window.supabase) {
 } else {
   $('online').textContent = 'offline, lanterns stay on your screen only';
 }
+
+// ---------- replay earlier confessions so the sky is never empty ----------
+let replayQueue = [], replayAll = [], lastFetch = 0;
+async function fetchEarlier() {
+  if (!sb) return;
+  try {
+    const { data, error } = await sb.rpc('recent_confessions', { max_rows: 150 });
+    if (error || !Array.isArray(data)) return;
+    lastFetch = Date.now();
+    const rows = data.map(r => ({ id: String(r.id).slice(0, 30), text: clean(r.text), createdAt: r.created_at, feels: Number(r.feels) || 0 })).filter(r => r.text && !hiddenIds.has(r.id));
+    const top = [...rows].sort((a, b) => b.feels - a.feels).slice(0, 12);
+    const rest = rows.filter(r => !top.includes(r)).sort(() => Math.random() - .5);
+    replayAll = [...top, ...rest];
+    replayQueue = replayAll.slice();
+  } catch (e) { console.warn('fetch earlier failed', e); }
+}
+function replayTick() {
+  if (!document.hidden && $('intro').classList.contains('hidden')) {
+    if (!replayQueue.length && replayAll.length) replayQueue = replayAll.slice().sort(() => Math.random() - .5);
+    const onScreen = [...lanterns.keys()].length;
+    if (onScreen < 7) {
+      while (replayQueue.length) { const r = replayQueue.shift(); if (addLantern({ ...r, older: true })) break; }
+    }
+  }
+  if (Date.now() - lastFetch > 5 * 60 * 1000) fetchEarlier();
+  setTimeout(replayTick, 3500 + Math.random() * 2500);
+}
+fetchEarlier().then(() => setTimeout(replayTick, 600));
 
 // ---------- prompt chips ----------
 const msg = $('msg');
