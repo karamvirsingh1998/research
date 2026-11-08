@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Diwali Confessions · nothing is saved</title>
+<meta name="description" content="Release an anonymous Diwali confession as a lantern. Everyone online sees it float by, then it's gone forever. Nothing is saved.">
+<meta property="og:title" content="Diwali Confessions 🏮 nothing is saved">
+<meta property="og:description" content="Let go of one Diwali secret. It floats up as a lantern for everyone online, then disappears forever.">
+<meta name="theme-color" content="#0B1026">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏮</text></svg>">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0B1026; color: #FAEEDA; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; overflow: hidden; }
+  #sky { position: fixed; inset: 0; overflow: hidden; }
+  .star { position: absolute; width: 2px; height: 2px; background: #FAEEDA; border-radius: 50%; animation: tw 3s ease-in-out infinite; }
+  @keyframes tw { 0%,100% { opacity: .2 } 50% { opacity: .9 } }
+
+  .lantern { position: absolute; bottom: -180px; width: 210px; display: flex; flex-direction: column; align-items: center; cursor: pointer; animation: rise linear forwards; }
+  .lantern .glow { font-size: 40px; filter: drop-shadow(0 0 14px #EF9F27); animation: sway 3.5s ease-in-out infinite; }
+  .lantern .card { margin-top: 4px; background: rgba(42,33,72,.88); border: 1px solid #534AB7; border-radius: 14px; padding: 8px 12px; font-size: 14px; line-height: 1.4; text-align: center; word-wrap: break-word; max-width: 210px; }
+  .lantern .same { margin-top: 4px; font-size: 12px; color: #FAC775; min-height: 16px; }
+  .lantern.mine .card { border-color: #EF9F27; }
+  @keyframes rise { from { transform: translateY(0) } to { transform: translateY(calc(-100vh - 260px)) } }
+  @keyframes sway { 0%,100% { transform: rotate(-4deg) } 50% { transform: rotate(4deg) } }
+
+  #panel { position: fixed; left: 0; right: 0; bottom: 0; padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(11,16,38,.96) 30%); z-index: 5; }
+  .inner { max-width: 520px; margin: 0 auto; }
+  .row { display: flex; gap: 8px; align-items: stretch; }
+  textarea { flex: 1; min-height: 64px; max-height: 120px; resize: none; font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 14px; border: 1px solid #3C3489; background: #141A36; color: #FAEEDA; outline: none; }
+  textarea:focus { border-color: #EF9F27; }
+  button { font: inherit; cursor: pointer; border: none; border-radius: 14px; }
+  #send { background: #EF9F27; color: #412402; font-weight: 700; font-size: 16px; padding: 0 16px; min-width: 96px; }
+  #send:active { transform: scale(.97); }
+  .meta { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 13px; color: #B4B2A9; gap: 8px; }
+  #dice { background: transparent; color: #FAC775; font-size: 13px; padding: 4px 0; }
+  #err { color: #F09595; font-size: 13px; min-height: 18px; margin-top: 4px; }
+
+  #top { position: fixed; top: 0; left: 0; right: 0; z-index: 5; padding: 14px 16px; text-align: center; pointer-events: none; }
+  #top h1 { margin: 0; font-size: 22px; color: #FAC775; }
+  #top p { margin: 4px 0 0; font-size: 13px; color: #B4B2A9; }
+  #live { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; background: rgba(20,26,54,.85); border: 1px solid #262E5A; padding: 4px 10px; border-radius: 999px; pointer-events: auto; }
+  #live i { width: 8px; height: 8px; border-radius: 50%; background: #E24B4A; display: inline-block; animation: tw 1.4s ease-in-out infinite; }
+  #empty { position: fixed; left: 50%; top: 42%; transform: translate(-50%,-50%); text-align: center; color: #B4B2A9; font-size: 15px; line-height: 1.6; max-width: 300px; z-index: 1; transition: opacity .6s; }
+  #share { margin-top: 10px; background: #25D366; color: #062b14; font-weight: 700; padding: 10px 14px; font-size: 14px; }
+
+  #intro { position: fixed; inset: 0; z-index: 20; background: rgba(11,16,38,.94); display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+  #intro .big { font-size: 72px; filter: drop-shadow(0 0 18px #EF9F27); animation: sway 3s ease-in-out infinite; }
+  #intro h2 { font-size: 30px; color: #FAC775; margin: 10px 0 8px; }
+  #intro p { color: #FAEEDA; font-size: 16px; line-height: 1.6; margin: 0 0 6px; max-width: 360px; }
+  #intro .rules { color: #B4B2A9; font-size: 14px; margin-top: 12px; }
+  #enter { margin-top: 18px; background: #EF9F27; color: #412402; font-weight: 700; font-size: 17px; padding: 14px 28px; }
+  .hidden { display: none !important; }
+  .toast { position: fixed; left: 50%; top: 110px; transform: translateX(-50%); background: #FAEEDA; color: #412402; padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 600; z-index: 30; transition: opacity .3s; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div id="sky"></div>
+
+<div id="top">
+  <h1>🏮 Diwali Confessions</h1>
+  <p>anonymous · live · nothing is saved, ever</p>
+  <div id="live"><i></i><span id="online">connecting…</span></div>
+</div>
+
+<div id="empty">
+  The sky is quiet right now.<br>Lanterns only exist while they float, so bring some friends.
+  <br><button id="share">Share on WhatsApp</button>
+</div>
+
+<div id="panel">
+  <div class="inner">
+    <div class="row">
+      <textarea id="msg" maxlength="140" placeholder="I regifted the soan papdi I got last year…"></textarea>
+      <button id="send">Release 🏮</button>
+    </div>
+    <div id="err"></div>
+    <div class="meta">
+      <button id="dice">🎲 Give me a prompt</button>
+      <span id="count">0/140</span>
+    </div>
+  </div>
+</div>
+
+<div id="intro">
+  <div>
+    <div class="big">🏮</div>
+    <h2>Diwali Confessions</h2>
+    <p>Let go of one Diwali secret. It floats up as a lantern for everyone online right now, then it's gone forever.</p>
+    <p class="rules">No names, no numbers, no links. Be kind.<br>Nothing is stored anywhere, not even by us.</p>
+    <button id="enter">Enter the sky</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://cijyucjjststmuvieefm.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_momkCpxvpy2dHvaP9UUcJg_FEt4gLkQ";
+
+const $ = id => document.getElementById(id);
+const ME = Math.random().toString(36).slice(2, 10);
+const PROMPTS = [
+  "I regifted the soan papdi I got last year…",
+  "The cracker I'm secretly scared of is…",
+  "This Diwali I'm actually missing…",
+  "The thing I pretended to clean but didn't…",
+  "My real reason for skipping the family function…",
+  "I ate the mithai that was kept for guests…",
+  "Something I never told my parents about Diwali…",
+  "The wish I'm making tonight is…",
+  "The relative question I'm dreading is…",
+  "I still haven't called…",
+  "My Diwali bonus actually went on…",
+  "I lit a diya tonight for…"
+];
+let promptIdx = Math.floor(Math.random() * PROMPTS.length);
+
+// ---------- safety: block links, numbers, handles, slurs (checked on send AND receive) ----------
+const BAD = ['madarchod','maderchod','bhenchod','behenchod','benchod','chutiya','chutiye','bhosdi','bhosad','randi','gaand','lund','lauda','loda','harami','fuck','bitch','cunt','whore','slut','nigger','faggot',' mc ',' bc ',' mkc ',' bkl '];
+function clean(t) {
+  if (typeof t !== 'string') return null;
+  t = t.replace(/\s+/g, ' ').trim().slice(0, 140);
+  if (t.length < 3) return null;
+  if (/https?:|www\.|\.(com|in|net|org|io|app|me|ly)\b/i.test(t)) return null;
+  if (/\d[\d\s\-().]{6,}\d/.test(t)) return null;
+  if (/@\w|[\w.+-]+@[\w-]+\./.test(t)) return null;
+  const words = t.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+  const joined = words.join('');
+  for (const b of BAD) {
+    const w = b.trim();
+    if (w.length >= 6 ? joined.includes(w) : words.includes(w)) return null;
+  }
+  return t;
+}
+
+// ---------- sky ----------
+for (let i = 0; i < 90; i++) {
+  const s = document.createElement('div'); s.className = 'star';
+  s.style.left = Math.random() * 100 + 'vw'; s.style.top = Math.random() * 100 + 'vh';
+  s.style.animationDelay = (Math.random() * 3) + 's';
+  $('sky').appendChild(s);
+}
+const lanterns = new Map();
+let shown = 0;
+
+function addLantern({ id, text, mine }) {
+  if (lanterns.has(id)) return;
+  if (lanterns.size > 30) { const first = lanterns.keys().next().value; lanterns.get(first).el.remove(); lanterns.delete(first); }
+  const el = document.createElement('div');
+  el.className = 'lantern' + (mine ? ' mine' : '');
+  el.style.left = Math.max(4, Math.random() * (innerWidth - 214)) + 'px';
+  const dur = 20 + Math.random() * 10;
+  el.style.animationDuration = dur + 's';
+  const glow = document.createElement('div'); glow.className = 'glow'; glow.textContent = '🏮';
+  const card = document.createElement('div'); card.className = 'card'; card.textContent = text;
+  const same = document.createElement('div'); same.className = 'same';
+  el.append(glow, card, same);
+  const L = { el, same, count: 0, tapped: false };
+  el.addEventListener('click', () => {
+    if (L.tapped) return; L.tapped = true;
+    bumpSame(id, 1);
+    send('same', { id });
+  });
+  $('sky').appendChild(el);
+  lanterns.set(id, L);
+  setTimeout(() => { el.remove(); lanterns.delete(id); }, dur * 1000 + 500);
+  shown++;
+  $('empty').style.opacity = 0;
+}
+function bumpSame(id, n) {
+  const L = lanterns.get(id); if (!L) return;
+  L.count += n;
+  L.same.textContent = `🪔 ${L.count} ${L.count === 1 ? 'person feels' : 'people feel'} this`;
+}
+
+// ---------- realtime: broadcast + presence only, nothing written to any table ----------
+let channel = null;
+const recent = new Map(); // sender -> timestamps, to drop floods
+function allowed(sender) {
+  const now = Date.now(), list = (recent.get(sender) || []).filter(t => now - t < 60000);
+  if (list.length >= 4) return false;
+  list.push(now); recent.set(sender, list); return true;
+}
+function send(event, payload) { if (channel) channel.send({ type: 'broadcast', event, payload: { ...payload, from: ME } }); }
+
+if (window.supabase) {
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  channel = sb.channel('diwali-confessions', { config: { broadcast: { self: false }, presence: { key: ME } } });
+  channel
+    .on('broadcast', { event: 'confess' }, ({ payload }) => {
+      const text = clean(payload && payload.text);
+      if (!text || !payload.id || !allowed(payload.from)) return;
+      addLantern({ id: String(payload.id).slice(0, 20), text });
+    })
+    .on('broadcast', { event: 'same' }, ({ payload }) => { if (payload && payload.id) bumpSame(String(payload.id).slice(0, 20), 1); })
+    .on('presence', { event: 'sync' }, () => {
+      const n = Object.keys(channel.presenceState()).length;
+      $('online').textContent = n <= 1 ? 'just you here right now' : `${n} people under this sky right now`;
+    })
+    .subscribe(status => {
+      if (status === 'SUBSCRIBED') channel.track({ at: Date.now() });
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') $('online').textContent = 'offline, lanterns stay on your screen only';
+    });
+} else {
+  $('online').textContent = 'offline, lanterns stay on your screen only';
+}
+
+// ---------- compose ----------
+let lastSent = 0;
+const msg = $('msg');
+msg.addEventListener('input', () => { $('count').textContent = msg.value.length + '/140'; $('err').textContent = ''; });
+$('dice').addEventListener('click', () => { promptIdx = (promptIdx + 1) % PROMPTS.length; msg.value = PROMPTS[promptIdx].replace('…', ' '); msg.focus(); msg.dispatchEvent(new Event('input')); });
+msg.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); release(); } });
+$('send').addEventListener('click', release);
+
+function release() {
+  const raw = msg.value;
+  if (!raw.trim()) { $('err').textContent = 'Write something first'; return; }
+  const text = clean(raw);
+  if (!text) { $('err').textContent = 'Keep it anonymous and kind: no names with numbers, links, @handles or slurs.'; return; }
+  const wait = 20000 - (Date.now() - lastSent);
+  if (wait > 0) { $('err').textContent = `Let your lantern rise first. Try again in ${Math.ceil(wait / 1000)}s.`; return; }
+  lastSent = Date.now();
+  const id = ME + Date.now().toString(36);
+  addLantern({ id, text, mine: true });
+  send('confess', { id, text });
+  msg.value = ''; msg.dispatchEvent(new Event('input')); msg.blur();
+  toast('Released. Watch it float away 🏮');
+}
+
+function toast(t) {
+  const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d);
+  setTimeout(() => { d.style.opacity = 0; setTimeout(() => d.remove(), 300); }, 1800);
+}
+
+$('share').addEventListener('click', () => {
+  const url = location.origin + location.pathname;
+  window.open('https://wa.me/?text=' + encodeURIComponent(`🏮 Diwali Confessions: drop one anonymous Diwali secret, it floats up as a lantern for everyone online and disappears forever. Nothing is saved. ${url}`), '_blank');
+});
+$('enter').addEventListener('click', () => $('intro').classList.add('hidden'));
+</script>
+</body>
+</html>
