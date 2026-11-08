@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Diwali Confessions · nothing is saved</title>
-<meta name="description" content="Release an anonymous Diwali confession as a lantern. Everyone online sees it float by, then it's gone forever. Nothing is saved.">
-<meta property="og:title" content="Diwali Confessions 🏮 nothing is saved">
-<meta property="og:description" content="Let go of one Diwali secret. It floats up as a lantern for everyone online, then disappears forever.">
+<title>Diwali Confessions · anonymous</title>
+<meta name="description" content="Release an anonymous Diwali confession as a lantern. Everyone online sees it float by, then it drifts off the screen.">
+<meta property="og:title" content="Diwali Confessions 🏮 anonymous">
+<meta property="og:description" content="Let go of one Diwali secret. It floats up as a lantern for everyone online, anonymously.">
 <meta name="theme-color" content="#0B1026">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏮</text></svg>">
 <style>
@@ -60,7 +60,7 @@
 
 <div id="top">
   <h1>🏮 Diwali Confessions</h1>
-  <p>anonymous · live · nothing is saved, ever</p>
+  <p>anonymous · live · no names, no accounts</p>
   <div id="live"><i></i><span id="online">connecting…</span></div>
 </div>
 
@@ -87,8 +87,8 @@
   <div>
     <div class="big">🏮</div>
     <h2>Diwali Confessions</h2>
-    <p>Let go of one Diwali secret. It floats up as a lantern for everyone online right now, then it's gone forever.</p>
-    <p class="rules">No names, no numbers, no links. Be kind.<br>Nothing is stored anywhere, not even by us.</p>
+    <p>Let go of one Diwali secret. It floats up as a lantern for everyone online right now, then drifts off the screen.</p>
+    <p class="rules">No names, no numbers, no links. Be kind.<br>Nothing that identifies you is collected. Confessions are kept anonymously so we can share Diwali stats later, like the most relatable confession.</p>
     <button id="enter">Enter the sky</button>
   </div>
 </div>
@@ -160,6 +160,7 @@ function addLantern({ id, text, mine }) {
     if (L.tapped) return; L.tapped = true;
     bumpSame(id, 1);
     send('same', { id });
+    save('confession_feels', { confession_id: id });
   });
   $('sky').appendChild(el);
   lanterns.set(id, L);
@@ -173,8 +174,10 @@ function bumpSame(id, n) {
   L.same.textContent = `🪔 ${L.count} ${L.count === 1 ? 'person feels' : 'people feel'} this`;
 }
 
-// ---------- realtime: broadcast + presence only, nothing written to any table ----------
+// ---------- realtime: broadcast + presence; confessions and taps are also saved anonymously ----------
 let channel = null;
+let sb = null;
+let usedPrompt = null;
 const recent = new Map(); // sender -> timestamps, to drop floods
 function allowed(sender) {
   const now = Date.now(), list = (recent.get(sender) || []).filter(t => now - t < 60000);
@@ -184,7 +187,7 @@ function allowed(sender) {
 function send(event, payload) { if (channel) channel.send({ type: 'broadcast', event, payload: { ...payload, from: ME } }); }
 
 if (window.supabase) {
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   channel = sb.channel('diwali-confessions', { config: { broadcast: { self: false }, presence: { key: ME } } });
   channel
     .on('broadcast', { event: 'confess' }, ({ payload }) => {
@@ -209,7 +212,7 @@ if (window.supabase) {
 let lastSent = 0;
 const msg = $('msg');
 msg.addEventListener('input', () => { $('count').textContent = msg.value.length + '/140'; $('err').textContent = ''; });
-$('dice').addEventListener('click', () => { promptIdx = (promptIdx + 1) % PROMPTS.length; msg.value = PROMPTS[promptIdx].replace('…', ' '); msg.focus(); msg.dispatchEvent(new Event('input')); });
+$('dice').addEventListener('click', () => { promptIdx = (promptIdx + 1) % PROMPTS.length; usedPrompt = PROMPTS[promptIdx].replace('…', ''); msg.value = usedPrompt + ' '; msg.focus(); msg.dispatchEvent(new Event('input')); });
 msg.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); release(); } });
 $('send').addEventListener('click', release);
 
@@ -224,8 +227,16 @@ function release() {
   const id = ME + Date.now().toString(36);
   addLantern({ id, text, mine: true });
   send('confess', { id, text });
+  save('confessions', { id, text, prompt: usedPrompt && text.startsWith(usedPrompt.trim()) ? usedPrompt.trim() : null });
+  usedPrompt = null;
   msg.value = ''; msg.dispatchEvent(new Event('input')); msg.blur();
   toast('Released. Watch it float away 🏮');
+}
+
+// Anonymous, insert-only storage. Failures are ignored so the lantern still flies.
+async function save(table, row) {
+  if (!sb) return;
+  try { const { error } = await sb.from(table).insert(row); if (error) console.warn('save failed', table, error.message); } catch (e) { console.warn('save failed', e); }
 }
 
 function toast(t) {
@@ -235,7 +246,7 @@ function toast(t) {
 
 $('share').addEventListener('click', () => {
   const url = location.origin + location.pathname;
-  window.open('https://wa.me/?text=' + encodeURIComponent(`🏮 Diwali Confessions: drop one anonymous Diwali secret, it floats up as a lantern for everyone online and disappears forever. Nothing is saved. ${url}`), '_blank');
+  window.open('https://wa.me/?text=' + encodeURIComponent(`🏮 Diwali Confessions: drop one anonymous Diwali secret and watch it float up as a lantern for everyone online. No names, no login. ${url}`), '_blank');
 });
 $('enter').addEventListener('click', () => $('intro').classList.add('hidden'));
 </script>
