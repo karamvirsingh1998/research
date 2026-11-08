@@ -46,6 +46,10 @@
   #celebrate .box { max-width: 420px; width: 100%; text-align: center; }
   #celebrate h2 { font-size: 28px; margin: 0 0 8px; }
   #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 11; }
+  .designs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .dcard { background: #141A36; border: 2px solid #262E5A; border-radius: 14px; padding: 8px 6px 6px; cursor: pointer; text-align: center; color: #FAEEDA; font-size: 13px; font-weight: 600; }
+  .dcard svg { width: 100%; height: auto; display: block; margin-bottom: 4px; }
+  .dcard.sel { border-color: #EF9F27; background: #2A2148; }
   .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #FAEEDA; color: #412402; padding: 10px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; z-index: 20; transition: opacity .3s; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -63,13 +67,10 @@
     <p class="sub">Create a rangoli for your family. Everyone fills one piece, and it completes only when the whole family has joined.</p>
     <label for="gname">Rangoli name</label>
     <input id="gname" type="text" maxlength="60" placeholder="Singh family Diwali 2026">
-    <label for="design">Design</label>
-    <select id="design">
-      <option value="mandala">Mandala</option>
-      <option value="lotus">Lotus</option>
-    </select>
     <label for="pieces">Number of pieces: <b id="pout">12</b></label>
     <input id="pieces" type="range" min="2" max="100" step="1" value="12">
+    <label>Choose a design</label>
+    <div class="designs" id="designs" role="radiogroup" aria-label="Rangoli design"></div>
     <p class="muted" style="margin:4px 0 0">Tip: one piece per family member. 12–24 works best on phones.</p>
     <p id="cerr" class="err"></p>
     <button id="createBtn" class="btn primary">Create rangoli</button>
@@ -211,6 +212,82 @@ function petal(r0, r1, a0, a1) {
   const [bx, by] = pt(r0, m), [tx, ty] = pt(r1, m), [lx, ly] = pt((r0 + r1) / 2, m - w), [rx, ry] = pt((r0 + r1) / 2, m + w);
   return `M${bx},${by}Q${lx},${ly} ${tx},${ty}Q${rx},${ry} ${bx},${by}Z`;
 }
+function kite(r0, r1, a0, a1) {
+  const m = (a0 + a1) / 2, g = Math.min(0.03, (a1 - a0) * 0.08), rm = r0 + (r1 - r0) * 0.45;
+  const P = [pt(r0 + 2, m), pt(rm, a0 + g), pt(r1 + 6, m), pt(rm, a1 - g)];
+  return 'M' + P.map(p => p.join(',')).join('L') + 'Z';
+}
+function scallop(r0, r1, a0, a1) {
+  const g = Math.min(0.03, (a1 - a0) * 0.08), m = (a0 + a1) / 2, rs = r0 + (r1 - r0) * 0.45;
+  const [x0, y0] = pt(r0, a0 + g), [x1, y1] = pt(r0, a1 - g), [x2, y2] = pt(rs, a1 - g), [x3, y3] = pt(rs, a0 + g);
+  const ca = Math.min((a1 - a0) * 0.42, Math.PI / 3);
+  const [c1x, c1y] = pt(r1 + 14, m + ca), [c2x, c2y] = pt(r1 + 14, m - ca);
+  const l = a1 - a0 > Math.PI ? 1 : 0;
+  return `M${x0},${y0}A${r0},${r0} 0 ${l} 1 ${x1},${y1}L${x2},${y2}C${c1x},${c1y} ${c2x},${c2y} ${x3},${y3}Z`;
+}
+function swirl(r0, r1, a0, a1) {
+  const g = Math.min(0.03, (a1 - a0) * 0.08), s = (a1 - a0) * 0.6;
+  const [x0, y0] = pt(r0, a0 + g), [x1, y1] = pt(r0, a1 - g), [x2, y2] = pt(r1, a1 - g + s), [x3, y3] = pt(r1, a0 + g + s);
+  const l = a1 - a0 > Math.PI ? 1 : 0;
+  return `M${x0},${y0}A${r0},${r0} 0 ${l} 1 ${x1},${y1}L${x2},${y2}A${r1},${r1} 0 ${l} 0 ${x3},${y3}Z`;
+}
+function bindu(r0, r1, a0, a1) {
+  const m = (a0 + a1) / 2, rm = (r0 + r1) / 2, [cx, cy] = pt(rm, m);
+  const r = Math.max(4, Math.min((r1 - r0) / 2, rm * Math.sin(Math.min(Math.PI / 2, (a1 - a0) / 2))) * 0.88);
+  return `M${cx - r},${cy}a${r},${r} 0 1,0 ${2 * r},0a${r},${r} 0 1,0 ${-2 * r},0Z`;
+}
+const DESIGNS = [
+  { id: 'mandala', label: 'Mandala', shape: (r0, r1, a0, a1) => sector(r0, r1, a0 + 0.02, a1 - 0.02) },
+  { id: 'lotus',   label: 'Lotus',   shape: (r0, r1, a0, a1) => petal(r0, r1 + 4, a0, a1) },
+  { id: 'star',    label: 'Star',    shape: kite },
+  { id: 'flower',  label: 'Flower',  shape: scallop },
+  { id: 'dots',    label: 'Dots',    shape: bindu },
+  { id: 'chakra',  label: 'Chakra',  shape: swirl },
+];
+const designOf = id => DESIGNS.find(d => d.id === id) || DESIGNS[0];
+
+// Builds the rangoli into an <svg>; returns per-piece elements in piece order.
+function buildRangoli(svg, designId, n, opts = {}) {
+  svg.innerHTML = '';
+  const shape = designOf(designId).shape, out = [];
+  for (let i = 0; i < 48; i++) { const [x, y] = pt(203, i / 48 * Math.PI * 2); svg.appendChild(mk('circle', { cx: x, cy: y, r: 2.2, fill: PALETTE[i % 4], opacity: .7 })); }
+  svg.appendChild(mk('circle', { r: 34, fill: '#FAC775' }));
+  const counts = ringCounts(n), rings = counts.length; let idx = 0;
+  counts.forEach((cnt, ri) => {
+    const r0 = 44 + ri * (150 / rings), r1 = 44 + (ri + 1) * (150 / rings) - 6, off = ri % 2 ? Math.PI / cnt : 0;
+    for (let i = 0; i < cnt; i++) {
+      const a0 = i / cnt * Math.PI * 2 + off - Math.PI / 2, a1 = (i + 1) / cnt * Math.PI * 2 + off - Math.PI / 2;
+      const k = idx++;
+      const path = mk('path', { d: shape(r0, r1, a0, a1), fill: opts.preview ? PALETTE[k % PALETTE.length] : '#1A2140', stroke: opts.preview ? '#0B1026' : '#534AB7', 'stroke-width': opts.preview ? 2 : 1.2 });
+      svg.appendChild(path);
+      const m = (a0 + a1) / 2, rr = (r0 + r1) / 2, [lx, ly] = pt(rr, m);
+      out.push({ path, lx, ly, rings });
+    }
+  });
+  return out;
+}
+
+function renderDesignPicker() {
+  const n = +$('pieces').value, box = $('designs');
+  if (!box.children.length) {
+    DESIGNS.forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'dcard'; card.setAttribute('role', 'radio'); card.tabIndex = 0; card.dataset.id = d.id;
+      card.appendChild(mk('svg', { viewBox: '-210 -210 420 420' }));
+      card.appendChild(document.createTextNode(d.label));
+      const pick = () => { selectedDesign = d.id; renderDesignPicker(); };
+      card.addEventListener('click', pick);
+      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+      box.appendChild(card);
+    });
+  }
+  [...box.children].forEach(card => {
+    const sel = card.dataset.id === selectedDesign;
+    card.classList.toggle('sel', sel); card.setAttribute('aria-checked', sel);
+    buildRangoli(card.querySelector('svg'), card.dataset.id, n, { preview: true });
+  });
+}
+let selectedDesign = 'mandala';
 
 // ---------- State ----------
 let R = null;                 // rangoli row
@@ -224,29 +301,17 @@ const link = () => location.origin + location.pathname + '?r=' + R.id;
 const myKey = () => 'me:' + R.id;
 
 function drawRangoli() {
-  const svg = $('rg'); svg.innerHTML = ''; els = [];
-  const lotus = R.design === 'lotus';
-  // decorative outer dots
-  for (let i = 0; i < 48; i++) { const [x, y] = pt(203, i / 48 * Math.PI * 2); svg.appendChild(mk('circle', { cx: x, cy: y, r: 2.2, fill: PALETTE[i % 4], opacity: .7 })); }
-  svg.appendChild(mk('circle', { r: 34, fill: '#FAC775' }));
-  const center = mk('text', { id: 'center', 'text-anchor': 'middle', y: 6, 'font-size': 16, 'font-weight': 700, fill: '#633806' });
-  svg.appendChild(center);
-  const counts = ringCounts(R.pieces), rings = counts.length; let idx = 0;
-  counts.forEach((n, ri) => {
-    const r0 = 44 + ri * (150 / rings), r1 = 44 + (ri + 1) * (150 / rings) - 6, off = ri % 2 ? Math.PI / n : 0;
-    for (let i = 0; i < n; i++) {
-      const a0 = i / n * Math.PI * 2 + off - Math.PI / 2, a1 = (i + 1) / n * Math.PI * 2 + off - Math.PI / 2;
-      const k = idx++;
-      const path = mk('path', { d: lotus ? petal(r0, r1 + 4, a0, a1) : sector(r0, r1, a0 + 0.02, a1 - 0.02), fill: '#1A2140', stroke: '#534AB7', 'stroke-width': 1.2, class: 'pc empty' });
-      const title = mk('title', {}); title.textContent = 'Empty piece, tap to fill'; path.appendChild(title);
-      path.addEventListener('click', () => claim(k));
-      svg.appendChild(path);
-      const m = (a0 + a1) / 2, rr = (r0 + r1) / 2, [lx, ly] = pt(rr, m);
-      const label = mk('text', { x: lx, y: ly + 4, 'text-anchor': 'middle', 'font-size': rings === 1 ? 14 : 11, 'font-weight': 600, fill: '#FFFFFF' });
-      label.style.pointerEvents = 'none';
-      svg.appendChild(label);
-      els.push({ path, label, title });
-    }
+  const svg = $('rg');
+  const parts = buildRangoli(svg, R.design, R.pieces);
+  svg.appendChild(mk('text', { id: 'center', 'text-anchor': 'middle', y: 6, 'font-size': 16, 'font-weight': 700, fill: '#633806' }));
+  els = parts.map(({ path, lx, ly, rings }, k) => {
+    path.setAttribute('class', 'pc empty');
+    const title = mk('title', {}); title.textContent = 'Empty piece, tap to fill'; path.appendChild(title);
+    path.addEventListener('click', () => claim(k));
+    const label = mk('text', { x: lx, y: ly + 4, 'text-anchor': 'middle', 'font-size': rings === 1 ? 14 : 11, 'font-weight': 600, fill: '#FFFFFF' });
+    label.style.pointerEvents = 'none';
+    svg.appendChild(label);
+    return { path, label, title };
   });
 }
 
@@ -393,7 +458,7 @@ async function openBoard(id, isHost) {
   }
 }
 
-$('pieces').addEventListener('input', e => $('pout').textContent = e.target.value);
+$('pieces').addEventListener('input', e => { $('pout').textContent = e.target.value; renderDesignPicker(); });
 $('gname').addEventListener('input', () => $('cerr').textContent = '');
 $('me').addEventListener('input', () => $('err').textContent = '');
 
@@ -401,7 +466,7 @@ $('createBtn').addEventListener('click', async () => {
   const name = $('gname').value.trim();
   if (!name) { $('cerr').textContent = 'Give your rangoli a name'; $('gname').focus(); return; }
   const id = Math.random().toString(36).slice(2, 6) + Date.now().toString(36).slice(-4);
-  const r = { id, name, design: $('design').value, pieces: +$('pieces').value };
+  const r = { id, name, design: selectedDesign, pieces: +$('pieces').value };
   $('createBtn').disabled = true; $('createBtn').textContent = 'Creating…';
   try {
     await store.create(r);
@@ -426,7 +491,7 @@ $('saveImgBtn').addEventListener('click', saveImage);
 $('closeCeleb').addEventListener('click', () => $('celebrate').classList.add('hidden'));
 
 const rid = new URLSearchParams(location.search).get('r');
-if (rid) openBoard(rid, false); else show('createView');
+if (rid) openBoard(rid, false); else { renderDesignPicker(); show('createView'); }
 </script>
 </body>
 </html>
