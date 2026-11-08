@@ -3,93 +3,112 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Diwali Confessions · anonymous</title>
-<meta name="description" content="Release an anonymous Diwali confession as a lantern. Everyone online sees it float by, then it drifts off the screen.">
-<meta property="og:title" content="Diwali Confessions 🏮 anonymous">
-<meta property="og:description" content="Let go of one Diwali secret. It floats up as a lantern for everyone online, anonymously.">
+<title>Diwali Confessions · completely anonymous</title>
+<meta name="description" content="Release an anonymous Diwali confession as a glowing kandil. Everyone online sees it float across the night sky.">
+<meta property="og:title" content="Diwali Confessions 🪔 completely anonymous">
+<meta property="og:description" content="Let go of one Diwali secret. It floats up as a glowing lantern for everyone online. No login, no names.">
 <meta name="theme-color" content="#0B1026">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏮</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪔</text></svg>">
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: #0B1026; color: #FAEEDA; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; overflow: hidden; }
-  #sky { position: fixed; inset: 0; overflow: hidden; }
-  .star { position: absolute; width: 2px; height: 2px; background: #FAEEDA; border-radius: 50%; animation: tw 3s ease-in-out infinite; }
+  #fx { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  #sky { position: fixed; inset: 0; overflow: hidden; z-index: 1; }
+  .star { position: absolute; width: 2px; height: 2px; background: #FAEEDA; border-radius: 50%; animation: tw 3s ease-in-out infinite; pointer-events: none; }
   @keyframes tw { 0%,100% { opacity: .2 } 50% { opacity: .9 } }
 
-  .lantern { position: absolute; bottom: -180px; width: 210px; display: flex; flex-direction: column; align-items: center; cursor: pointer; animation: rise linear forwards; }
-  .lantern .glow { font-size: 40px; filter: drop-shadow(0 0 14px #EF9F27); animation: sway 3.5s ease-in-out infinite; }
-  .lantern .card { margin-top: 4px; background: rgba(42,33,72,.88); border: 1px solid #534AB7; border-radius: 14px; padding: 8px 12px; font-size: 14px; line-height: 1.4; text-align: center; word-wrap: break-word; max-width: 210px; }
+  /* marigold toran */
+  #toran { position: fixed; top: 0; left: 0; width: 100%; height: 64px; z-index: 6; pointer-events: none; }
+
+  /* kandil lanterns */
+  .lantern { position: absolute; bottom: -200px; width: 220px; display: flex; flex-direction: column; align-items: center; cursor: pointer; animation: rise linear forwards; }
+  .lantern svg { width: 54px; height: 82px; animation: sway 3.5s ease-in-out infinite; transform-origin: 50% 0; filter: drop-shadow(0 0 16px rgba(239,159,39,.75)); }
+  .lantern .card { margin-top: 2px; background: rgba(42,33,72,.9); border: 1px solid #534AB7; border-radius: 14px; padding: 8px 12px; font-size: 14px; line-height: 1.4; text-align: center; word-wrap: break-word; max-width: 220px; }
   .lantern .same { margin-top: 4px; font-size: 12px; color: #FAC775; min-height: 16px; }
-  .lantern.mine .card { border-color: #EF9F27; }
-  @keyframes rise { from { transform: translateY(0) } to { transform: translateY(calc(-100vh - 260px)) } }
-  @keyframes sway { 0%,100% { transform: rotate(-4deg) } 50% { transform: rotate(4deg) } }
+  .lantern.mine .card { border-color: #EF9F27; box-shadow: 0 0 0 1px rgba(239,159,39,.35); }
+  @keyframes rise { from { transform: translateY(0) } to { transform: translateY(calc(-100vh - 280px)) } }
+  @keyframes sway { 0%,100% { transform: rotate(-5deg) } 50% { transform: rotate(5deg) } }
 
-  #panel { position: fixed; left: 0; right: 0; bottom: 0; padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(11,16,38,.96) 30%); z-index: 5; }
-  .inner { max-width: 520px; margin: 0 auto; }
-  .row { display: flex; gap: 8px; align-items: stretch; }
-  textarea { flex: 1; min-height: 64px; max-height: 120px; resize: none; font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 14px; border: 1px solid #3C3489; background: #141A36; color: #FAEEDA; outline: none; }
-  textarea:focus { border-color: #EF9F27; }
-  button { font: inherit; cursor: pointer; border: none; border-radius: 14px; }
-  #send { background: #EF9F27; color: #412402; font-weight: 700; font-size: 16px; padding: 0 16px; min-width: 96px; }
-  #send:active { transform: scale(.97); }
-  .meta { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 13px; color: #B4B2A9; gap: 8px; }
-  #dice { background: transparent; color: #FAC775; font-size: 13px; padding: 4px 0; }
-  #err { color: #F09595; font-size: 13px; min-height: 18px; margin-top: 4px; }
-
-  #top { position: fixed; top: 0; left: 0; right: 0; z-index: 5; padding: 14px 16px; text-align: center; pointer-events: none; }
-  #top h1 { margin: 0; font-size: 22px; color: #FAC775; }
+  #top { position: fixed; top: 52px; left: 0; right: 0; z-index: 5; padding: 8px 16px; text-align: center; pointer-events: none; }
+  #top h1 { margin: 0; font-size: 24px; color: #FAC775; text-shadow: 0 0 16px rgba(239,159,39,.5); }
   #top p { margin: 4px 0 0; font-size: 13px; color: #B4B2A9; }
-  #live { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; background: rgba(20,26,54,.85); border: 1px solid #262E5A; padding: 4px 10px; border-radius: 999px; pointer-events: auto; }
+  #live { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; background: rgba(20,26,54,.85); border: 1px solid #262E5A; padding: 4px 10px; border-radius: 999px; }
   #live i { width: 8px; height: 8px; border-radius: 50%; background: #E24B4A; display: inline-block; animation: tw 1.4s ease-in-out infinite; }
-  #empty { position: fixed; left: 50%; top: 42%; transform: translate(-50%,-50%); text-align: center; color: #B4B2A9; font-size: 15px; line-height: 1.6; max-width: 300px; z-index: 1; transition: opacity .6s; }
+
+  #empty { position: fixed; left: 50%; top: 40%; transform: translate(-50%,-50%); text-align: center; color: #B4B2A9; font-size: 15px; line-height: 1.6; max-width: 300px; z-index: 2; transition: opacity .6s; }
+  #empty.gone { opacity: 0; pointer-events: none; }
   #share { margin-top: 10px; background: #25D366; color: #062b14; font-weight: 700; padding: 10px 14px; font-size: 14px; }
 
+  /* bottom panel */
+  #panel { position: fixed; left: 0; right: 0; bottom: 0; padding: 0 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(11,16,38,.97) 22%); z-index: 5; }
+  .inner { max-width: 540px; margin: 0 auto; }
+  .diyas { display: flex; justify-content: space-around; padding: 10px 4px 6px; font-size: 22px; }
+  .diyas span { animation: flick 1.2s ease-in-out infinite; display: inline-block; }
+  @keyframes flick { 0%,100% { filter: drop-shadow(0 0 4px #EF9F27); transform: scale(1) } 50% { filter: drop-shadow(0 0 12px #FAC775); transform: scale(1.06) } }
+  .hint { font-size: 13px; color: #FAC775; margin: 0 0 6px; }
+  #chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  #chips::-webkit-scrollbar { display: none; }
+  .chip { flex: 0 0 auto; background: #2A2148; border: 1px solid #534AB7; color: #FAEEDA; border-radius: 999px; padding: 8px 12px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+  .chip.surprise { background: #412402; border-color: #BA7517; color: #FAC775; font-weight: 600; }
+  .chip.on { background: #EF9F27; border-color: #EF9F27; color: #412402; }
+  .row { display: flex; gap: 8px; align-items: stretch; }
+  textarea { flex: 1; min-height: 60px; max-height: 110px; resize: none; font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 14px; border: 1px solid #3C3489; background: #141A36; color: #FAEEDA; outline: none; }
+  textarea:focus { border-color: #EF9F27; }
+  button { font: inherit; cursor: pointer; border: none; border-radius: 14px; }
+  #send { background: #EF9F27; color: #412402; font-weight: 700; font-size: 15px; padding: 0 14px; min-width: 92px; line-height: 1.2; }
+  #send:active { transform: scale(.97); }
+  .meta { display: flex; justify-content: space-between; margin-top: 4px; font-size: 12px; color: #888780; }
+  #err { color: #F09595; font-size: 13px; min-height: 0; margin-top: 4px; }
+
+  /* intro */
   #intro { position: fixed; inset: 0; z-index: 20; background: rgba(11,16,38,.94); display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; }
-  #intro .big { font-size: 72px; filter: drop-shadow(0 0 18px #EF9F27); animation: sway 3s ease-in-out infinite; }
-  #intro h2 { font-size: 30px; color: #FAC775; margin: 10px 0 8px; }
+  #intro .big svg { width: 90px; height: 136px; animation: sway 3s ease-in-out infinite; transform-origin: 50% 0; filter: drop-shadow(0 0 22px rgba(239,159,39,.8)); }
+  #intro h2 { font-size: 30px; color: #FAC775; margin: 6px 0 8px; text-shadow: 0 0 18px rgba(239,159,39,.5); }
   #intro p { color: #FAEEDA; font-size: 16px; line-height: 1.6; margin: 0 0 6px; max-width: 360px; }
   #intro .rules { color: #B4B2A9; font-size: 14px; margin-top: 12px; }
   #enter { margin-top: 18px; background: #EF9F27; color: #412402; font-weight: 700; font-size: 17px; padding: 14px 28px; }
   .hidden { display: none !important; }
-  .toast { position: fixed; left: 50%; top: 110px; transform: translateX(-50%); background: #FAEEDA; color: #412402; padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 600; z-index: 30; transition: opacity .3s; }
+  .toast { position: fixed; left: 50%; top: 150px; transform: translateX(-50%); background: #FAEEDA; color: #412402; padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 600; z-index: 30; transition: opacity .3s; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+<canvas id="fx"></canvas>
 <div id="sky"></div>
+<svg id="toran" preserveAspectRatio="none"></svg>
 
 <div id="top">
-  <h1>🏮 Diwali Confessions</h1>
+  <h1>🪔 Diwali Confessions</h1>
   <p>completely anonymous · live · no login</p>
   <div id="live"><i></i><span id="online">connecting…</span></div>
 </div>
 
 <div id="empty">
-  The sky is quiet right now.<br>Lanterns only exist while they float, so bring some friends.
-  <br><button id="share">Share on WhatsApp</button>
+  The sky is quiet right now.<br>Release the first kandil, then bring your friends.
+  <br><button id="share">Invite on WhatsApp</button>
 </div>
 
 <div id="panel">
   <div class="inner">
+    <div class="diyas" aria-hidden="true"><span>🪔</span><span style="animation-delay:.3s">🪔</span><span style="animation-delay:.6s">🪔</span><span style="animation-delay:.15s">🪔</span><span style="animation-delay:.45s">🪔</span><span style="animation-delay:.75s">🪔</span><span style="animation-delay:.2s">🪔</span></div>
+    <p class="hint">Stuck? Tap one to start 👇</p>
+    <div id="chips"></div>
     <div class="row">
-      <textarea id="msg" maxlength="140" placeholder="I regifted the soan papdi I got last year…"></textarea>
-      <button id="send">Release 🏮</button>
+      <textarea id="msg" maxlength="140" placeholder="Write your Diwali confession…"></textarea>
+      <button id="send">Release<br>kandil ✨</button>
     </div>
     <div id="err"></div>
-    <div class="meta">
-      <button id="dice">🎲 Give me a prompt</button>
-      <span id="count">0/140</span>
-    </div>
+    <div class="meta"><span>Tap any lantern to say "same" 🪔</span><span id="count">0/140</span></div>
   </div>
 </div>
 
 <div id="intro">
   <div>
-    <div class="big">🏮</div>
+    <div class="big" id="introKandil"></div>
     <h2>Diwali Confessions</h2>
-    <p>Let go of one Diwali secret. It floats up as a lantern for everyone online right now, then drifts off the screen.</p>
+    <p>Let go of one Diwali secret. It floats up as a glowing kandil for everyone online right now.</p>
     <p class="rules">No names, no numbers, no links. Be kind.<br>Completely anonymous. No login, no names, and your confession is never linked to you.</p>
-    <button id="enter">Enter the sky</button>
+    <button id="enter">Light up the sky ✨</button>
   </div>
 </div>
 
@@ -99,24 +118,26 @@ const SUPABASE_ANON_KEY = "sb_publishable_momkCpxvpy2dHvaP9UUcJg_FEt4gLkQ";
 
 const $ = id => document.getElementById(id);
 const ME = Math.random().toString(36).slice(2, 10);
+const COLS = ['#EF9F27', '#D4537E', '#7F77DD', '#1D9E75', '#D85A30', '#378ADD', '#ED93B1'];
+
+// Prompts people can tap. Each fills in the opening words.
 const PROMPTS = [
-  "I regifted the soan papdi I got last year…",
-  "The cracker I'm secretly scared of is…",
-  "This Diwali I'm actually missing…",
-  "The thing I pretended to clean but didn't…",
-  "My real reason for skipping the family function…",
-  "I ate the mithai that was kept for guests…",
-  "Something I never told my parents about Diwali…",
-  "The wish I'm making tonight is…",
-  "The relative question I'm dreading is…",
-  "I still haven't called…",
-  "My Diwali bonus actually went on…",
-  "I lit a diya tonight for…"
+  { label: '🎁 Regifted…',          stem: 'I regifted' },
+  { label: '🍬 The mithai…',        stem: 'I secretly ate the mithai meant for' },
+  { label: '🏠 Missing…',           stem: 'This Diwali I\'m actually missing' },
+  { label: '🧹 Didn\'t clean…',      stem: 'I pretended to clean but actually' },
+  { label: '👵 Dreading…',          stem: 'The relative question I\'m dreading is' },
+  { label: '🎆 Scared of…',         stem: 'The cracker I\'m secretly scared of is' },
+  { label: '📞 Haven\'t called…',    stem: 'I still haven\'t called' },
+  { label: '💸 My bonus went on…',  stem: 'My Diwali bonus actually went on' },
+  { label: '🙈 Never told…',        stem: 'I never told my parents that' },
+  { label: '🃏 Card night…',        stem: 'At the card party I' },
+  { label: '🪔 A diya for…',        stem: 'Tonight I lit a diya for' },
+  { label: '✨ My wish…',           stem: 'My wish this Diwali is' },
 ];
-let promptIdx = Math.floor(Math.random() * PROMPTS.length);
 
 // ---------- safety: block links, numbers, handles, slurs (checked on send AND receive) ----------
-const BAD = ['madarchod','maderchod','bhenchod','behenchod','benchod','chutiya','chutiye','bhosdi','bhosad','randi','gaand','lund','lauda','loda','harami','fuck','bitch','cunt','whore','slut','nigger','faggot',' mc ',' bc ',' mkc ',' bkl '];
+const BAD = ['madarchod','maderchod','bhenchod','behenchod','benchod','chutiya','chutiye','bhosdi','bhosad','randi','gaand','lund','lauda','loda','harami','fuck','bitch','cunt','whore','slut','nigger','faggot','mc','bc','mkc','bkl'];
 function clean(t) {
   if (typeof t !== 'string') return null;
   t = t.replace(/\s+/g, ' ').trim().slice(0, 140);
@@ -126,12 +147,63 @@ function clean(t) {
   if (/@\w|[\w.+-]+@[\w-]+\./.test(t)) return null;
   const words = t.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
   const joined = words.join('');
-  for (const b of BAD) {
-    const w = b.trim();
-    if (w.length >= 6 ? joined.includes(w) : words.includes(w)) return null;
-  }
+  for (const w of BAD) if (w.length >= 6 ? joined.includes(w) : words.includes(w)) return null;
   return t;
 }
+
+// ---------- kandil (Indian star lantern) ----------
+function kandil(color) {
+  const pts = []; for (let i = 0; i < 16; i++) { const r = i % 2 ? 13 : 24, a = i / 16 * Math.PI * 2 - Math.PI / 2; pts.push((30 + r * Math.cos(a)).toFixed(1) + ',' + (40 + r * Math.sin(a)).toFixed(1)); }
+  return `<svg viewBox="0 0 60 92" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <line x1="30" y1="0" x2="30" y2="15" stroke="#B4B2A9" stroke-width="1"/>
+    <polygon points="${pts.join(' ')}" fill="${color}" stroke="#FAC775" stroke-width="1.5" stroke-linejoin="round"/>
+    <circle cx="30" cy="40" r="9" fill="#FAEEDA" opacity=".95"/><circle cx="30" cy="40" r="5" fill="#FAC775"/>
+    <g stroke="${color}" stroke-width="2" stroke-linecap="round"><line x1="22" y1="62" x2="20" y2="88"/><line x1="30" y1="64" x2="30" y2="91"/><line x1="38" y1="62" x2="40" y2="88"/></g>
+    <g fill="#FAC775"><circle cx="20" cy="88" r="2"/><circle cx="30" cy="91" r="2"/><circle cx="40" cy="88" r="2"/></g>
+  </svg>`;
+}
+$('introKandil').innerHTML = kandil('#D85A30');
+
+// ---------- marigold toran ----------
+function drawToran() {
+  const svg = $('toran'), W = innerWidth, H = 64; svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  let html = `<line x1="0" y1="4" x2="${W}" y2="4" stroke="#BA7517" stroke-width="2"/>`;
+  const swags = Math.max(3, Math.round(W / 130)), sw = W / swags;
+  for (let s = 0; s < swags; s++) {
+    const x0 = s * sw;
+    for (let i = 0; i <= 14; i++) {
+      const t = i / 14, x = x0 + t * sw, y = 6 + Math.sin(t * Math.PI) * 26;
+      html += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6" fill="${i % 2 ? '#EF9F27' : '#FAC775'}"/>`;
+    }
+    const mx = x0 + sw / 2;
+    html += `<path d="M${mx - 7},32 Q${mx},62 ${mx + 7},32 Z" fill="#3B6D11"/><path d="M${mx - 3},32 L${mx},58 L${mx + 3},32 Z" fill="#639922"/>`;
+  }
+  svg.innerHTML = html;
+}
+drawToran(); addEventListener('resize', drawToran);
+
+// ---------- background fireworks ----------
+const FX = (() => {
+  const c = $('fx'), x = c.getContext('2d'), reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const FC = ['#FAC775', '#EF9F27', '#ED93B1', '#D4537E', '#AFA9EC', '#5DCAA5', '#85B7EB', '#FFFFFF'];
+  const rockets = [], parts = []; let W = 0, H = 0;
+  function size() { const d = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; c.width = W * d; c.height = H * d; x.setTransform(d, 0, 0, d, 0, 0); }
+  size(); addEventListener('resize', size);
+  function burst(px, py, n = 50) {
+    if (parts.length > 1400) return;
+    const c1 = FC[Math.random() * FC.length | 0], c2 = FC[Math.random() * FC.length | 0];
+    for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, s = Math.random() * 3.4 + .5; parts.push({ x: px, y: py, vx: Math.cos(a) * s, vy: Math.sin(a) * s, l: 1, d: .012 + Math.random() * .012, c: i % 3 ? c1 : c2 }); }
+  }
+  function launch(tx, ty) { rockets.push({ x: tx + (Math.random() - .5) * 50, y: H + 10, tx, ty, vy: -(7 + Math.random() * 3) }); }
+  (function tick() {
+    x.clearRect(0, 0, W, H);
+    for (let i = rockets.length - 1; i >= 0; i--) { const r = rockets[i]; r.x += (r.tx - r.x) * .04; r.y += r.vy; r.vy *= .988; x.globalAlpha = 1; x.fillStyle = '#FAEEDA'; x.fillRect(r.x - 1, r.y, 2, 7); if (r.y <= r.ty || r.vy > -1.4) { burst(r.x, r.y); rockets.splice(i, 1); } }
+    for (let i = parts.length - 1; i >= 0; i--) { const p = parts[i]; p.x += p.vx; p.y += p.vy; p.vy += .045; p.vx *= .985; p.l -= p.d; if (p.l <= 0) { parts.splice(i, 1); continue; } x.globalAlpha = p.l * .85; x.fillStyle = p.c; x.beginPath(); x.arc(p.x, p.y, 1.8, 0, 6.2832); x.fill(); }
+    x.globalAlpha = 1; requestAnimationFrame(tick);
+  })();
+  (function auto() { if (!document.hidden) launch(W * (.1 + Math.random() * .8), H * (.18 + Math.random() * .25)); setTimeout(auto, (reduce ? 8000 : 2600) + Math.random() * 3000); })();
+  return { burst, launch };
+})();
 
 // ---------- sky ----------
 for (let i = 0; i < 90; i++) {
@@ -140,33 +212,36 @@ for (let i = 0; i < 90; i++) {
   s.style.animationDelay = (Math.random() * 3) + 's';
   $('sky').appendChild(s);
 }
-const lanterns = new Map();
-let shown = 0;
+$('sky').addEventListener('pointerdown', e => { if (e.target === $('sky') || e.target.classList.contains('star')) FX.launch(e.clientX, e.clientY); });
 
+const lanterns = new Map();
 function addLantern({ id, text, mine }) {
   if (lanterns.has(id)) return;
   if (lanterns.size > 30) { const first = lanterns.keys().next().value; lanterns.get(first).el.remove(); lanterns.delete(first); }
   const el = document.createElement('div');
   el.className = 'lantern' + (mine ? ' mine' : '');
-  el.style.left = Math.max(4, Math.random() * (innerWidth - 214)) + 'px';
-  const dur = 20 + Math.random() * 10;
+  const left = Math.max(4, Math.random() * (innerWidth - 224));
+  el.style.left = left + 'px';
+  const dur = 22 + Math.random() * 10;
   el.style.animationDuration = dur + 's';
-  const glow = document.createElement('div'); glow.className = 'glow'; glow.textContent = '🏮';
+  const color = COLS[Math.abs([...id].reduce((h, ch) => h * 31 + ch.charCodeAt(0) | 0, 7)) % COLS.length];
+  el.innerHTML = kandil(color);
   const card = document.createElement('div'); card.className = 'card'; card.textContent = text;
   const same = document.createElement('div'); same.className = 'same';
-  el.append(glow, card, same);
+  el.append(card, same);
   const L = { el, same, count: 0, tapped: false };
   el.addEventListener('click', () => {
     if (L.tapped) return; L.tapped = true;
     bumpSame(id, 1);
     send('same', { id });
     save('confession_feels', { confession_id: id });
+    const b = el.getBoundingClientRect(); FX.burst(b.left + b.width / 2, b.top + 30, 30);
   });
   $('sky').appendChild(el);
   lanterns.set(id, L);
   setTimeout(() => { el.remove(); lanterns.delete(id); }, dur * 1000 + 500);
-  shown++;
-  $('empty').style.opacity = 0;
+  $('empty').classList.add('gone');
+  if (mine) FX.burst(left + 110, innerHeight - 120, 60);
 }
 function bumpSame(id, n) {
   const L = lanterns.get(id); if (!L) return;
@@ -175,16 +250,18 @@ function bumpSame(id, n) {
 }
 
 // ---------- realtime: broadcast + presence; confessions and taps are also saved anonymously ----------
-let channel = null;
-let sb = null;
-let usedPrompt = null;
-const recent = new Map(); // sender -> timestamps, to drop floods
+let channel = null, sb = null, usedPrompt = null;
+const recent = new Map();
 function allowed(sender) {
   const now = Date.now(), list = (recent.get(sender) || []).filter(t => now - t < 60000);
   if (list.length >= 4) return false;
   list.push(now); recent.set(sender, list); return true;
 }
 function send(event, payload) { if (channel) channel.send({ type: 'broadcast', event, payload: { ...payload, from: ME } }); }
+async function save(table, row) {
+  if (!sb) return;
+  try { const { error } = await sb.from(table).insert(row); if (error) console.warn('save failed', table, error.message); } catch (e) { console.warn('save failed', e); }
+}
 
 if (window.supabase) {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -198,7 +275,7 @@ if (window.supabase) {
     .on('broadcast', { event: 'same' }, ({ payload }) => { if (payload && payload.id) bumpSame(String(payload.id).slice(0, 20), 1); })
     .on('presence', { event: 'sync' }, () => {
       const n = Object.keys(channel.presenceState()).length;
-      $('online').textContent = n <= 1 ? 'just you here right now' : `${n} people under this sky right now`;
+      $('online').textContent = n <= 1 ? 'just you under this sky right now' : `${n} people under this sky right now`;
     })
     .subscribe(status => {
       if (status === 'SUBSCRIBED') channel.track({ at: Date.now() });
@@ -208,35 +285,48 @@ if (window.supabase) {
   $('online').textContent = 'offline, lanterns stay on your screen only';
 }
 
+// ---------- prompt chips ----------
+const msg = $('msg');
+function usePrompt(p, chip) {
+  usedPrompt = p.stem;
+  msg.value = p.stem + ' ';
+  msg.focus(); msg.setSelectionRange(msg.value.length, msg.value.length);
+  msg.dispatchEvent(new Event('input'));
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === chip));
+}
+(function buildChips() {
+  const box = $('chips');
+  const surprise = document.createElement('button');
+  surprise.className = 'chip surprise'; surprise.textContent = '🎲 Surprise me';
+  surprise.addEventListener('click', () => { const i = Math.floor(Math.random() * PROMPTS.length); usePrompt(PROMPTS[i], box.children[i + 1]); box.children[i + 1].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); });
+  box.appendChild(surprise);
+  PROMPTS.forEach(p => { const b = document.createElement('button'); b.className = 'chip'; b.textContent = p.label; b.addEventListener('click', () => usePrompt(p, b)); box.appendChild(b); });
+})();
+
 // ---------- compose ----------
 let lastSent = 0;
-const msg = $('msg');
-msg.addEventListener('input', () => { $('count').textContent = msg.value.length + '/140'; $('err').textContent = ''; });
-$('dice').addEventListener('click', () => { promptIdx = (promptIdx + 1) % PROMPTS.length; usedPrompt = PROMPTS[promptIdx].replace('…', ''); msg.value = usedPrompt + ' '; msg.focus(); msg.dispatchEvent(new Event('input')); });
+msg.addEventListener('input', () => {
+  $('count').textContent = msg.value.length + '/140'; $('err').textContent = '';
+  if (usedPrompt && !msg.value.startsWith(usedPrompt)) { usedPrompt = null; document.querySelectorAll('.chip').forEach(c => c.classList.remove('on')); }
+});
 msg.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); release(); } });
 $('send').addEventListener('click', release);
 
 function release() {
   const raw = msg.value;
-  if (!raw.trim()) { $('err').textContent = 'Write something first'; return; }
+  if (!raw.trim() || (usedPrompt && raw.trim() === usedPrompt)) { $('err').textContent = 'Finish the sentence first ✍️'; msg.focus(); return; }
   const text = clean(raw);
-  if (!text) { $('err').textContent = 'Keep it anonymous and kind: no names with numbers, links, @handles or slurs.'; return; }
+  if (!text) { $('err').textContent = 'Keep it anonymous and kind: no phone numbers, links, @handles or slurs.'; return; }
   const wait = 20000 - (Date.now() - lastSent);
-  if (wait > 0) { $('err').textContent = `Let your lantern rise first. Try again in ${Math.ceil(wait / 1000)}s.`; return; }
+  if (wait > 0) { $('err').textContent = `Let your kandil rise first. Try again in ${Math.ceil(wait / 1000)}s.`; return; }
   lastSent = Date.now();
   const id = ME + Date.now().toString(36);
   addLantern({ id, text, mine: true });
   send('confess', { id, text });
-  save('confessions', { id, text, prompt: usedPrompt && text.startsWith(usedPrompt.trim()) ? usedPrompt.trim() : null });
-  usedPrompt = null;
+  save('confessions', { id, text, prompt: usedPrompt && text.startsWith(usedPrompt) ? usedPrompt : null });
+  usedPrompt = null; document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
   msg.value = ''; msg.dispatchEvent(new Event('input')); msg.blur();
-  toast('Released. Watch it float away 🏮');
-}
-
-// Anonymous, insert-only storage. Failures are ignored so the lantern still flies.
-async function save(table, row) {
-  if (!sb) return;
-  try { const { error } = await sb.from(table).insert(row); if (error) console.warn('save failed', table, error.message); } catch (e) { console.warn('save failed', e); }
+  toast('Released ✨ watch it float away');
 }
 
 function toast(t) {
@@ -246,9 +336,12 @@ function toast(t) {
 
 $('share').addEventListener('click', () => {
   const url = location.origin + location.pathname;
-  window.open('https://wa.me/?text=' + encodeURIComponent(`🏮 Diwali Confessions: drop one anonymous Diwali secret and watch it float up as a lantern for everyone online. No names, no login. ${url}`), '_blank');
+  window.open('https://wa.me/?text=' + encodeURIComponent(`🪔 Diwali Confessions: drop one anonymous Diwali secret and watch it float up as a glowing kandil for everyone online. No login, no names. ${url}`), '_blank');
 });
-$('enter').addEventListener('click', () => $('intro').classList.add('hidden'));
+$('enter').addEventListener('click', () => {
+  $('intro').classList.add('hidden');
+  for (let i = 0; i < 4; i++) setTimeout(() => FX.launch(innerWidth * (.15 + Math.random() * .7), innerHeight * (.2 + Math.random() * .2)), i * 250);
+});
 </script>
 </body>
 </html>
